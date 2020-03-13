@@ -1,18 +1,16 @@
 import * as express from 'express';
 import { App } from './app';
 import { UITController } from './controllers/uit.controller';
-
-console.log('1');
-
-const uitController = new UITController();
+import * as morgan from 'morgan';
 const uit_agent = new App({
-    port: 3010,
+    port: 3000,
     controllers: [
-        uitController
+        new UITController()
     ],
     middlewares: [
         express.json(),
-        express.urlencoded({ extended: true })
+        express.urlencoded({ extended: true }),
+        morgan("dev")
     ],
 })
 uit_agent.listen();

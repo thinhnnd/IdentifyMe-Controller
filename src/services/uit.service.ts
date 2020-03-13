@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { BaseAgentService } from '../services/agent';
-import { RegisterSchemasDTO } from 'dtos';
+import { RegisterSchemasDTO } from '../dtos';
 import { getGenesisTxns } from '../utils';
 import { SEED } from '../constant';
 export class UITAgentService extends BaseAgentService {
@@ -11,13 +11,13 @@ export class UITAgentService extends BaseAgentService {
          */
         const extractArgs = !noAuto ? [] : ["--auto-accept-invites", "--auto-accept-requests"];
         super({
-            agentName: 'UIT Agent',
+            agentName: 'UIT_Agent',
             httpPort: httpPort,
             adminPort: adminPort,
             args: extractArgs,
             seed: SEED
         });
-        console.log("UITAgentService -> constructor -> SEED", SEED)
+        // console.log(this)
         this.connectionId = '';
         this.credAttrs = [];
     }
@@ -25,10 +25,15 @@ export class UITAgentService extends BaseAgentService {
         console.log('bootstraping');
         try {
             const genesis = await getGenesisTxns();
-            console.log("UITAgentService -> bootstrap -> genesis", genesis)
             this.genesisData = genesis;
             await this.registerDID();
             console.log('Register DID:', this.did);
+            console.log('Starting process...');
+            await this.startProcess();
+            console.log('Detecting connection from: ' + this.agentName);
+            await this.detectAgentConnected();
+            console.log('Admin URL at:', this.adminURL);
+            console.log('Endpoint at:', this.endpoint);
         } catch (error) {
             console.error(error);
         }
@@ -37,10 +42,11 @@ export class UITAgentService extends BaseAgentService {
         try {
             const body: RegisterSchemasDTO = req.body;
             const result = await this.registerSchema(body.schemaName, body.schemaVersion, body.schemaAttrs);
-            console.log('result', result.data);
-            if (result.data) {
-                res.json(result.data);
+            console.log('result', result);
+            if (result) {
+                res.json(result);
             }
+            else throw { error: 'Server response with empty body' };
         } catch (error) {
             res.json(error)
         }

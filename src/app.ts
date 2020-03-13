@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Application } from 'express';
-import { AppOptions } from 'interface';
+import { AppOptions } from './interface';
 export class App {
     private app: Application
     private port: number | string

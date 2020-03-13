@@ -1,0 +1,44 @@
+version: '3.3'
+services:
+    uit-agent:
+        environment:
+          ADMIN_PORT: 5000
+          AGENT_PORT: 8000
+          WEBHOOK_URL: http://uit-service:3000/webhooks
+        build:
+            context: .
+            dockerfile: ./Dockerfile.agent
+        ports:
+            - "5000:5000"
+            - "8000:8000"
+        # networks:
+        #     - identifyme_net
+        volumes:
+            - aca-py:/home/indy/.indy_client/wallet
+        # command: start -it http 0.0.0.0 8000 -ot http --admin 0.0.0.0 5000 -e localhost --genesis-url http://dev.greenlight.bcovrin.vonx.io/genesis --label "University of Information Technology" --auto-accept-invites --auto-accept-requests --admin-insecure-mode --log-level info
+    uit-service:
+        image: uit-service
+        build: 
+            context: .
+            dockerfile: ./Dockerfile.service
+        depends_on:
+            - uit-agent
+        # networks:
+        #     - identifyme_net
+        environment:
+            PORT: 3000
+            RUNMODE: "docker"
+            SEED: "x4Oi4aLbjSW39PyDypc06Jtw0vQV5W2z"
+            POSTGRES_ACCOUNT: "postgres"
+            POSTGRES_PASSWORD: "mysecretpassword"
+            POSTGRES_ADMIN_ACCOUNT: "postgres"
+            POSTGRES_ADMIN_PASSWORD: "mysecretpassword"
+            GENESIS_URL: "http://172.19.0.1:9000/genesis"
+            DOCKERHOST: "$DOCKERHOST"
+            AGENT_URL: "http://uit-agent:5000"
+        ports:
+            - 3000:3000
+volumes:
+    aca-py:
+# networks:
+#     identifyme_net:

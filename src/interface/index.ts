@@ -15,12 +15,10 @@ export interface IBaseAgent {
     requestPath: string
     genesisData: string
     seed: string
-    adminRequest: (requestPath: string, config: AxiosRequestConfig) => Promise<AxiosResponse>
+    adminRequest: (requestPath: string, config: AxiosRequestConfig) => Promise<any>
     registerDID: (ledgerURL: string, alias: string) => Promise<void>
-    registerSchema: (schemaName: string, schemaVersion: string | number, schemaAttrs: string[]) => Promise<AxiosResponse>
+    registerSchema: (schemaName: string, schemaVersion: string | number, schemaAttrs: string[]) => Promise<CreatedSchema>
     createCredentialsDefinition: (schemaId: string) => Promise<AxiosResponse>
-    fetchStatus: () => Promise<Object>
-    fetchTiming: () => Promise<string>
     getAllSchemas: () => Promise<AxiosResponse>
 }
 export interface AgentOptions {
@@ -35,4 +33,7 @@ export interface AgentOptions {
     timing?: string
     timingLog?: string
     usePostgres?: Boolean
+}
+export interface CreatedSchema {
+    schema_id: string
 }

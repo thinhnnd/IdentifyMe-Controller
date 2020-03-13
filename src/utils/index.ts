@@ -11,6 +11,7 @@ export async function getGenesisTxns(): Promise<string> {
         }
         else if (!GENESIS_URL || ['localhost', '127.0.0.1'].includes(GENESIS_URL)) {
             const resp = await Axios.get(`http://${DEFAULT_EXTERNAL_HOST}:9000/genesis`);
+            // const resp = await Axios.get(`http://172.19.0.1:9000/genesis`);
             genesisTxn = resp.data;
         }
         else if (GENESIS_FILE) {

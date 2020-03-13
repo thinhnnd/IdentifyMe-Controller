@@ -1,8 +1,13 @@
-import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES } from '../constant';
-import { IBaseAgent, AgentOptions } from '../interface/index';
+import Axios, { AxiosRequestConfig } from 'axios';
 import { flatMapDeep } from 'lodash';
 import { spawn } from 'child_process';
+import { performance } from 'perf_hooks';
+
+import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT } from '../constant';
+import { IBaseAgent, AgentOptions, CreatedSchema } from '../interface/index';
+
+console.log("DEFAULT_INTERNAL_HOST:", DEFAULT_INTERNAL_HOST);
+console.log("DEFAULT_EXTERNAL_HOST:", DEFAULT_EXTERNAL_HOST);
 export class BaseAgentService implements IBaseAgent {
     /*Agent name */
     agentName: string;
@@ -37,20 +42,8 @@ export class BaseAgentService implements IBaseAgent {
 
     usePostgres: Boolean
     extractArgs: Array<string>
-    constructor(
-        // agentName: string,
-        // httpPort: string | number,
-        // adminPort: string | number,
-        // args: Array<any> = [],
-        // internalHost: string = '',
-        // externalHost: string = '',
-        // genesisData: string = '',
-        // seed: string = '',
-        // timing: string = '',
-        // timingLog: string = '',
-        // usePostgres: Boolean = null
-        agentOpts: AgentOptions
-    ) {
+    postgresConfig = {}
+    constructor(agentOpts: AgentOptions) {
         this.agentName = agentOpts.agentName;
         this.internalHost = agentOpts.internalHost || DEFAULT_INTERNAL_HOST;
         this.externalHost = agentOpts.externalHost || DEFAULT_EXTERNAL_HOST;
@@ -59,6 +52,8 @@ export class BaseAgentService implements IBaseAgent {
         this.genesisData = agentOpts.genesisData;
         this.webhookURL = '';
         this.webhookPort = '';
+        this.httpPort = agentOpts.httpPort;
+        this.adminPort = agentOpts.adminPort;
         this.seed = agentOpts.seed ? agentOpts.seed : 'my_seed_000000000000000000000010';
         this.timing = agentOpts.timing;
         this.timingLog = agentOpts.timingLog;
@@ -69,14 +64,15 @@ export class BaseAgentService implements IBaseAgent {
         this.walletName = agentOpts.args.hasOwnProperty('walletName') ? agentOpts.args['walletName'] : this.agentName + '-wallet';
         this.walletKey = agentOpts.args.hasOwnProperty('walletKey') ? agentOpts.args['walletKey'] : this.agentName + '-wallet-key';
         this.extractArgs = agentOpts.args;
+        this.postgresConfig = {
+            'url': `${this.internalHost}:5432`,
+            'tls': 'None',
+            'max_connections': 5,
+            'min_idle_time': 0,
+            'connection_timeout': 10,
+        }
     }
-    postgresConfig = {
-        'url': `${this.internalHost}:5432`,
-        'tls': 'None',
-        'max_connections': 5,
-        'min_idle_time': 0,
-        'connection_timeout': 10,
-    }
+
 
     postgreCreds = {
         'account': process.env.POSTGRES_ACCOUNT,
@@ -85,13 +81,20 @@ export class BaseAgentService implements IBaseAgent {
         'admin_password': process.env.POSTGRES_ADMIN_PASSWORD,
     }
     async adminRequest(requestPath: string, config: AxiosRequestConfig) {
-        config.baseURL = this.adminURL;
-        config.url = requestPath;
-        return await Axios.request(config);
+        try {
+            config.baseURL = this.adminURL;
+            config.url = requestPath;
+            console.log("BaseAgentService -> adminRequest -> config", config)
+
+            const response = await Axios.request(config);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+
     }
     async registerDID(ledgerURL: string = '', alias: string = ''): Promise<void> {
         console.log(`Registering agent ${this.agentName} with seed ${this.seed}`);
-        console.log(this);
 
         ledgerURL = LEDGER_URL || `http://${this.externalHost}:9000`;
         const data = {
@@ -116,10 +119,12 @@ export class BaseAgentService implements IBaseAgent {
             'schema_version': schemaVersion,
             'attributes': schemaAttrs,
         }
+        console.log("BaseAgentService -> registerSchema -> schemaBody", schemaBody)
         try {
-            return await this.adminRequest('/schemas', { method: 'POST', data: schemaBody });
+            const data: CreatedSchema = await this.adminRequest('/schemas', { method: 'POST', data: schemaBody });
+            return data;
         } catch (error) {
-            console.error(error.message + 'RegisterSchema Agent Error');
+            console.error('RegisterSchema Agent Error' + error.message);
         }
     }
     async createCredentialsDefinition(schemaId: string) {
@@ -136,7 +141,7 @@ export class BaseAgentService implements IBaseAgent {
         // TODO: get all schemas on Ledger of agent 
         return Axios.get('');
     }
-    async getAgentArgs(): Promise<string[]> {
+    private async getAgentArgs(): Promise<string[]> {
         const options = [
             ['--endpoint', this.endpoint],
             ['--label', this.agentName],
@@ -150,7 +155,7 @@ export class BaseAgentService implements IBaseAgent {
             ['--wallet-name', this.walletName],
             ['--wallet-key', this.walletKey],
         ];
-        if (this.genesisData) options.push(['--genesis-data', this.genesisData])
+        if (this.genesisData) options.push(['--genesis-transactions', this.genesisData])
         if (this.seed) options.push(['--seed', this.seed])
         if (this.storageType) options.push(['--storage-type', this.storageType])
         if (this.timing) options.push(['--timing'])
@@ -169,28 +174,56 @@ export class BaseAgentService implements IBaseAgent {
     async startProcess() {
         console.log('Starting agent ' + this.agentName);
         const options = await this.getAgentArgs();
+        const spawnOptions = {
+            stdio: 'inherit' //use for checking error in parent stdio 
+        }
         const childProcess = spawn('aca-py', ['start', ...options]);
         childProcess.stdout.on('data', data => {
-            console.log(data.toString(), 'ACA-Py');
+            console.log('ACA-Py' + data.toString());
         });
-        childProcess.stderr.on('close', () => {
-            console.error('Error while starting process', 'ACA-Py');
+        childProcess.stderr.on('data', data => {
+            console.log(`Stderr: ${data.toString()}`);
+        });
+        childProcess.on('close', (code) => {
+            console.log(`Child process exited with code ${code}`);
+        });
+        childProcess.on("error", (err) => {
+            console.log("Child Process error:", err);
         })
     }
-    async fetchStatus() {
+    async detectAgentConnected(): Promise<void> {
+        function sleep(milliseconds: number) {
+            var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > milliseconds) {
+                    break;
+                }
+            }
+        }
+        let statusText: any;
         const statusURL = this.adminURL + '/status';
-        const resp = await Axios.get(statusURL, { timeout: 30 });
-        const statusText = resp.data;
-        if (!statusText) throw new Error(`Timed out waiting for agent process to start.
-        Admin URL: ${statusURL}`);
+        const start = performance.now() / 1000;
+        while (performance.now() / 1000 - start < START_TIMEOUT) {
+            try {
+                const resp = await Axios.get(statusURL, { timeout: 3 });
+                if (resp.status === 200) {
+                    statusText = resp.data;
+                    break;
+                }
+            } catch (error) {
+                if (error.isAxiosError) continue;
+                console.log(error);
+            }
+            sleep(500);
+        }
         try {
-            const statusJSON = JSON.parse(statusText);
-            if (!statusJSON['version']) throw new Error(`Unexpected response from agent process. Admin URL: ${statusURL}`)
-            return statusJSON;
+            if (!statusText) throw new Error(`Timed out waiting for agent process to start.Admin URL: ${statusURL}`);
+            if (!statusText.version) throw new Error(`Unexpected response from agent process. Admin URL: ${statusURL}`);
+            console.log(`${this.agentName} has been started`);
         } catch (error) {
             console.log(error);
-            throw error;
         }
+
     }
     async fetchTiming() {
         const resp = await this.adminRequest('/timing', { method: 'GET' });
