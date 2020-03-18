@@ -16,9 +16,12 @@ export class UITController implements IBaseController {
         this.registerSchema();
     }
     private registerSchema() {
-        this.router.post('/', (req: Request, res: Response) => this.agentService.agentRegisterSchema(req, res));
+        this.router.post('/schemas', (req: Request, res: Response) => this.agentService.agentRegisterSchema(req, res));
     }
-    private async getAllSchemas() {
-        return await this.agentService.getAllSchemas();
+    private createCredentialsDefinition(){
+        this.router.post('/crea')
     }
+    // private async getAllSchemas() {
+    //     return await this.agentService.getAllSchemas();
+    // }
 }

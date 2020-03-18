@@ -3,6 +3,7 @@ import { BaseAgentService } from '../services/agent';
 import { RegisterSchemasDTO } from '../dtos';
 import { getGenesisTxns } from '../utils';
 import { SEED } from '../constant';
+import { SchemaSendRequest } from 'src/interface/api';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[]
     constructor(httpPort: number | string, adminPort: number | string, noAuto: Boolean) {
@@ -40,8 +41,8 @@ export class UITAgentService extends BaseAgentService {
     }
     async agentRegisterSchema(req: Request, res: Response) {
         try {
-            const body: RegisterSchemasDTO = req.body;
-            const result = await this.registerSchema(body.schemaName, body.schemaVersion, body.schemaAttrs);
+            const body: SchemaSendRequest = req.body;
+            const result = await this.registerSchema(body);
             console.log('result', result);
             if (result) {
                 res.json(result);

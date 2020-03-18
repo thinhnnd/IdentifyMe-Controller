@@ -1,10 +1,11 @@
-import Axios, { AxiosRequestConfig } from 'axios';
+import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { flatMapDeep } from 'lodash';
 import { spawn } from 'child_process';
 import { performance } from 'perf_hooks';
 
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT } from '../constant';
-import { IBaseAgent, AgentOptions, CreatedSchema } from '../interface/index';
+import { IBaseAgent, AgentOptions, CreatedSchema, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
+import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults } from '../interface/api';
 
 console.log("DEFAULT_INTERNAL_HOST:", DEFAULT_INTERNAL_HOST);
 console.log("DEFAULT_EXTERNAL_HOST:", DEFAULT_EXTERNAL_HOST);
@@ -113,34 +114,62 @@ export class BaseAgentService implements IBaseAgent {
             throw new Error('Error while registering did for agent: ' + this.agentName);
         }
     }
-    async registerSchema(schemaName: string, schemaVersion: string | number, schemaAttrs: string[]) {
-        const schemaBody = {
-            'schema_name': schemaName,
-            'schema_version': schemaVersion,
-            'attributes': schemaAttrs,
-        }
+
+    /* Credentials Definition */
+    async createCredentialsDefinition(body: CredentialDefinitionSendRequest)
+        : Promise<AxiosResponse<CredentialDefinitionSendResults>> {
+        return await this.adminRequest('/credential-definitions', { method: 'POST', data: body });
+    }
+    async getCredDef(crefDefId: string)
+        : Promise<AxiosResponse<CredentialDefinitionGetResults>> {
+        return await this.adminRequest('/credential-definitions/' + crefDefId, { method: 'GET' });
+    }
+
+    /* SCHEMA */
+    async registerSchema(schemaBody: SchemaSendRequest) {
         console.log("BaseAgentService -> registerSchema -> schemaBody", schemaBody)
         try {
-            const data: CreatedSchema = await this.adminRequest('/schemas', { method: 'POST', data: schemaBody });
+            const data: SchemaSendResults = await this.adminRequest('/schemas', { method: 'POST', data: schemaBody });
             return data;
         } catch (error) {
             console.error('RegisterSchema Agent Error' + error.message);
         }
     }
-    async createCredentialsDefinition(schemaId: string) {
-        const credDefBody = {
-            'schema_id': schemaId
-        };
-        return await this.adminRequest('/credential-definitions', { method: 'POST', data: credDefBody });
+    async getAllSchemas(filter: FilterSchema) {
+        return await this.adminRequest('/schemas/created/', { method: 'GET', params: { ...filter } });
     }
-    async getAllSchemas() {
-        // TODO: get all schemas on Ledger
-        return Axios.get('')
+    async getAllSchemasOfIssuer(issuerDid: string) {
+        return await this.adminRequest('/schemas/created/', { method: 'GET', params: { schema_issuer_did: issuerDid } });
     }
-    async getAllSchemasOfAgent(did: string) {
-        // TODO: get all schemas on Ledger of agent 
-        return Axios.get('');
+
+    /* Connection */
+    async createConnectionInvitation(query: ConnectionInvitationQuery): Promise<AxiosResponse<InvitationResult>> {
+        return await this.adminRequest('/connections/create-invitation', { method: 'POST', params: query })
     }
+    async reciveConnectionInvitation(
+        query: InvitationQuery,
+        body: ConnectionInvitation
+    ): Promise<AxiosResponse<ConnectionRecord>> {
+        return await this.adminRequest('/connections/recive-invitation', {
+            method: 'POST',
+            data: body,
+            params: {
+                alias: query.alias,
+                accept: query.accept
+            }
+        });
+    }
+    async acceptInvitation(connectionId: string): Promise<AxiosResponse<ConnectionRecord>> {
+        return await this.adminRequest(`/connections/${connectionId}/accept-invitation`, { method: 'POST' });
+    }
+    async removeConnection(connectionId: string) {
+        return await this.adminRequest(`/connections/${connectionId}/remove`, { method: 'POST' });
+    }
+    async fetchConnectionRecord(connectionId: string): Promise<AxiosResponse<ConnectionRecord>> {
+        return await this.adminRequest(`/connections/${connectionId}`, { method: 'GET' });
+    }
+
+
     private async getAgentArgs(): Promise<string[]> {
         const options = [
             ['--endpoint', this.endpoint],
@@ -189,7 +218,7 @@ export class BaseAgentService implements IBaseAgent {
         });
         childProcess.on("error", (err) => {
             console.log("Child Process error:", err);
-        })
+        });
     }
     async detectAgentConnected(): Promise<void> {
         function sleep(milliseconds: number) {
@@ -203,6 +232,7 @@ export class BaseAgentService implements IBaseAgent {
         let statusText: any;
         const statusURL = this.adminURL + '/status';
         const start = performance.now() / 1000;
+        //health check
         while (performance.now() / 1000 - start < START_TIMEOUT) {
             try {
                 const resp = await Axios.get(statusURL, { timeout: 3 });
@@ -223,7 +253,6 @@ export class BaseAgentService implements IBaseAgent {
         } catch (error) {
             console.log(error);
         }
-
     }
     async fetchTiming() {
         const resp = await this.adminRequest('/timing', { method: 'GET' });

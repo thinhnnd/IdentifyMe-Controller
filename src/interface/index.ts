@@ -1,4 +1,5 @@
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
+import { CredentialDefinitionSendRequest, SchemaSendRequest, SchemaSendResults } from './api';
 export interface AppOptions {
     port: number | string;
     middlewares: any
@@ -17,9 +18,9 @@ export interface IBaseAgent {
     seed: string
     adminRequest: (requestPath: string, config: AxiosRequestConfig) => Promise<any>
     registerDID: (ledgerURL: string, alias: string) => Promise<void>
-    registerSchema: (schemaName: string, schemaVersion: string | number, schemaAttrs: string[]) => Promise<CreatedSchema>
-    createCredentialsDefinition: (schemaId: string) => Promise<AxiosResponse>
-    getAllSchemas: () => Promise<AxiosResponse>
+    registerSchema: (schemaBody: SchemaSendRequest) => Promise<SchemaSendResults>
+    createCredentialsDefinition: (body: CredentialDefinitionSendRequest) => Promise<AxiosResponse>
+    getAllSchemas: (filter: FilterSchema) => Promise<AxiosResponse>
 }
 export interface AgentOptions {
     agentName: string
@@ -36,4 +37,21 @@ export interface AgentOptions {
 }
 export interface CreatedSchema {
     schema_id: string
+}
+export interface FilterSchema {
+    schema_id?: string
+    schema_issuer_did?: string
+    schema_name?: string
+    schema_version?: string
+}
+export interface ConnectionInvitationQuery {
+    alias?: string
+    accept?: string
+    public?: string
+    multi_use?: string
+}
+
+export interface InvitationQuery {
+    alias: string,
+    accept: "manual" | "auto"
 }
