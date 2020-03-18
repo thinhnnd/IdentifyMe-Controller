@@ -2,7 +2,6 @@ FROM bcgovimages/aries-cloudagent:py36-1.14-1_0.4.5
 RUN echo "Pulling bcgovimages/aries-cloudagent"
 USER root
 ENV NODE_VERSION=12.16.1
-ENV DOCKERHOST=172.17.0.1
 RUN apt-get update && \
     apt-get install wget curl ca-certificates rsync -y
 RUN wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
@@ -12,7 +11,6 @@ RUN . "$NVM_DIR/nvm.sh" &&  nvm use v${NODE_VERSION}
 RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
 RUN cp /home/indy/.nvm/versions/node/v${NODE_VERSION}/bin/node /usr/bin/
 RUN cp /home/indy/.nvm/versions/node/v${NODE_VERSION}/bin/npm /usr/bin/
-ENV RUNMODE=docker
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN /home/indy/.nvm/versions/node/v${NODE_VERSION}/bin/npm install
