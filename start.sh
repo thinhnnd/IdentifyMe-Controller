@@ -38,6 +38,8 @@ nextip(){
     NEXT_IP=$(printf '%d.%d.%d.%d\n' `echo $NEXT_IP_HEX | sed -r 's/(..)/0x\1 /g'`)
     echo "$NEXT_IP"
 }
+SEED=`docker run --rm sofianinho/pwgen-alpine -s 32 1`
+echo $SEED
 # DOCKERHOST=$(nextip $DOCKERHOST)
 echo $DOCKERHOST
 IMAGE="identifyme/uit-controller:1.0.0"
@@ -45,7 +47,7 @@ echo "Preparing agent image for $IMAGE..."
 docker build -t $IMAGE -f Dockerfile . || exit 1
 
 
-DOCKER_ENV="--env RUNMODE=${RUNMODE} --env DOCKERHOST=${DOCKERHOST}"
+DOCKER_ENV="--env RUNMODE=${RUNMODE} --env DOCKERHOST=${DOCKERHOST} --env SEED=${SEED}"
 if ! [ -z "$POSTGRES" ]; then
 	DOCKER_ENV="${DOCKER_ENV} --env POSTGRES=1 --env RUST_BACKTRACE=1"
 fi
