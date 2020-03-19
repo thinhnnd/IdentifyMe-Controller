@@ -38,7 +38,7 @@ nextip(){
     NEXT_IP=$(printf '%d.%d.%d.%d\n' `echo $NEXT_IP_HEX | sed -r 's/(..)/0x\1 /g'`)
     echo "$NEXT_IP"
 }
-DOCKERHOST=$(nextip $DOCKERHOST)
+# DOCKERHOST=$(nextip $DOCKERHOST)
 echo $DOCKERHOST
 IMAGE="identifyme/uit-controller:1.0.0"
 echo "Preparing agent image for $IMAGE..."
@@ -65,4 +65,4 @@ DOCKER=${DOCKER:-docker}
 TMP="$(cut -d'/' -f2 <<<"$IMAGE")"
 NAME="$(cut -d':' -f1 <<<"$TMP")"
 echo "Starting $NAME..."
-$DOCKER run $DOCKER_ENV --name $NAME --rm -it -p 3000:3000 $IMAGE #--port $AGENT_PORT 
+$DOCKER run $DOCKER_ENV --name $NAME --rm -it -p 3000:3000 -p 5000:5000 $IMAGE #--port $AGENT_PORT 
