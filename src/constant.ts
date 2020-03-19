@@ -4,7 +4,7 @@ export const GENESIS_URL = process.env.GENESIS_URL
 export const LEDGER_URL = process.env.LEDGER_URL
 export const GENESIS_FILE = process.env.GENESIS_FILE
 export const SEED = process.env.SEED
-export const START_TIMEOUT = 30;
+export const START_TIMEOUT = 150;
 export const DEFAULT_POSTGRES = Boolean(process.env.POSTGRES)
 const RUNMODE = process.env.RUNMODE;
 
