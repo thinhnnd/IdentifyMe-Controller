@@ -25,6 +25,14 @@ This repo using von-network, to start dev successfully, please clone von-network
 ```bash
 $ npm run dev
 ```
+#### Docker
+If you prefer global network than, please use environment variables.
+Available variables: LEDGER_URL, SEED, GENESIS_URL, GENESIS_FILE
+Easy run with script example:
+```bash
+$ LEDGER_URL=http://dev.greenlight.bcovrin.vonx.io ./start.sh
+```
+Please note the url (include LEDGER_URL) is not contains "/", (http://dev.greenlight.bcovrin.vonx.io)
 #### Build
 ```bash
 $ npm run build
