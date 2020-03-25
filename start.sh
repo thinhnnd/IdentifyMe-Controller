@@ -7,11 +7,32 @@ cd $(dirname $0)
 AGENT="$1"
 shift
 
-AGENT_MODULE="uit"
-AGENT_PORT=5000
-AGENT_PORT_RANGE=8020-8027
-
-
+if [ "$AGENT" = "uit" ]; then
+	AGENT_MODULE="UIT-University"
+	AGENT_PORT=8020
+  ADMIN_PORT=5020
+  WEB_UI_PORT=3020
+	# AGENT_PORT_RANGE=8020-8027
+elif [ "$AGENT" = "abc-corp" ]; then
+	AGENT_MODULE="ABC-Corporation"
+	AGENT_PORT=8030
+  ADMIN_PORT=5030
+  WEB_UI_PORT=3030
+	# AGENT_PORT_RANGE=8030-8037
+elif [ "$AGENT" = "vcb-bank" ]; then
+	AGENT_MODULE="VCB-Bank"
+	AGENT_PORT=8040
+  ADMIN_PORT=5040
+  WEB_UI_PORT=3040
+	# AGENT_PORT_RANGE=8040-8047
+else
+	echo "Please specify which agent you want to run. Choose from 'uit', 'abc-corp' or 'vcb-bank'."
+	exit 1
+fi
+export AGENT_MODULE
+export AGENT_PORT
+export ADMIN_PORT
+export WEB_UI_PORT
 
 if [ -z "${PWD_HOST_FQDN}" ]; then
 	DOCKERHOST=`docker run --rm --net=host eclipse/che-ip`
@@ -42,29 +63,27 @@ SEED=`docker run --rm sofianinho/pwgen-alpine -s 32 1`
 echo $SEED
 # DOCKERHOST=$(nextip $DOCKERHOST)
 echo $DOCKERHOST
-IMAGE="identifyme/uit-controller:1.0.0"
+IMAGE="identifyme/${AGENT}-agent:1.0.0"
 echo "Preparing agent image for $IMAGE..."
 docker build -t $IMAGE -f Dockerfile . || exit 1
 
 
-DOCKER_ENV="--env RUNMODE=${RUNMODE} --env DOCKERHOST=${DOCKERHOST} --env SEED=${SEED}"
+DOCKER_ENV="-e RUNMODE=${RUNMODE} -e DOCKERHOST=${DOCKERHOST} -e SEED=${SEED} -e AGENT_MODULE=${AGENT_MODULE} -e AGENT_PORT=${AGENT_PORT} -e ADMIN_PORT=${ADMIN_PORT} -e WEB_UI_PORT=${WEB_UI_PORT}"
 if ! [ -z "$POSTGRES" ]; then
-	DOCKER_ENV="${DOCKER_ENV} --env POSTGRES=1 --env RUST_BACKTRACE=1"
+	DOCKER_ENV="${DOCKER_ENV} -e POSTGRES=1 -e RUST_BACKTRACE=1"
 fi
 if ! [ -z "$LEDGER_URL" ]; then
 	GENESIS_URL="${LEDGER_URL}/genesis"
-	DOCKER_ENV="${DOCKER_ENV} --env LEDGER_URL=${LEDGER_URL}"
+	DOCKER_ENV="${DOCKER_ENV} -e LEDGER_URL=${LEDGER_URL}"
 fi
 if ! [ -z "$GENESIS_URL" ]; then
-	DOCKER_ENV="${DOCKER_ENV} --env GENESIS_URL=${GENESIS_URL}"
+	DOCKER_ENV="${DOCKER_ENV} -e GENESIS_URL=${GENESIS_URL}"
 fi
-if ! [ -z "$EVENTS" ]; then
-	DOCKER_ENV="${DOCKER_ENV} --env EVENTS=1"
-fi
+
 
 echo $DOCKER_ENV
 DOCKER=${DOCKER:-docker}
 TMP="$(cut -d'/' -f2 <<<"$IMAGE")"
 NAME="$(cut -d':' -f1 <<<"$TMP")"
 echo "Starting $NAME..."
-$DOCKER run $DOCKER_ENV --name $NAME --rm -it -p 3000:3000 -p 5000:5000 $IMAGE #--port $AGENT_PORT 
+$DOCKER run $DOCKER_ENV --name $NAME --rm -it -p ${WEB_UI_PORT} -p ${AGENT_PORT} -p ${ADMIN_PORT} $IMAGE #--port $AGENT_PORT 
