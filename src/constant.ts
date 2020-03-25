@@ -6,6 +6,11 @@ export const GENESIS_FILE = process.env.GENESIS_FILE
 export const SEED = process.env.SEED
 export const START_TIMEOUT = 150;
 export const DEFAULT_POSTGRES = Boolean(process.env.POSTGRES)
+
+export const AGENT_MODULE = process.env.AGENT_MODULE
+export const ADMIN_PORT = process.env.ADMIN_PORT
+export const AGENT_PORT = process.env.AGENT_PORT
+export const WEB_UI_PORT = process.env.WEB_UI_PORT
 const RUNMODE = process.env.RUNMODE;
 
 // export const DEFAULT_INTERNAL_HOST = RUNMODE === 'docker' ? process.env.DOCKERHOST || "host.docker.internal" : "127.0.0.1"
@@ -18,7 +23,7 @@ if (RUNMODE === 'docker') {
 
 }
 else if (RUNMODE === 'pwd') {
-    // DEFAULT_EXTERNAL_HOST = process.env.DOCKERHOST || "host.docker.internal";
+    DEFAULT_EXTERNAL_HOST = process.env.DOCKERHOST || "host.docker.internal";
 }
 
 
