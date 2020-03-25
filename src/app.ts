@@ -20,9 +20,9 @@ export class App {
             this.app.use('/', controller.router)
         })
     }
-    public listen() {
+    public listen(host: string) {
         this.app.listen(this.port, () => {
-            console.log(`App listening on the http://localhost:${this.port}`)
+            console.log(`App listening on the http://${host}:${this.port}`)
         })
     }
 }
