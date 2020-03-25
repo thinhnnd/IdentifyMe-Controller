@@ -1,11 +1,20 @@
 import * as express from 'express';
 import { App } from './app';
 import { UITController } from './controllers/uit.controller';
+import { DEFAULT_INTERNAL_HOST, WEB_UI_PORT, AGENT_MODULE } from './constant';
 import * as morgan from 'morgan';
-const uit_agent = new App({
-    port: 3000,
+import { ABCCorpController } from './controllers/abc-corp.controller';
+const agentsModule = ['UIT-University', 'ABC-Corporation', 'VCB-Bank'];
+
+if (!agentsModule.includes(AGENT_MODULE)) throw new Error(`This agent module is not supported`);
+let agentController = null;
+if (AGENT_MODULE === agentsModule[0]) agentController = new UITController();
+else if (AGENT_MODULE === agentsModule[1]) agentController = new ABCCorpController();
+else console.log("This agent controller is not supported");
+const agent = new App({
+    port: WEB_UI_PORT,
     controllers: [
-        new UITController()
+        agentController
     ],
     middlewares: [
         express.json(),
@@ -13,4 +22,4 @@ const uit_agent = new App({
         morgan("dev")
     ],
 })
-uit_agent.listen();
+agent.listen(DEFAULT_INTERNAL_HOST);
