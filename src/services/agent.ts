@@ -49,7 +49,7 @@ export class BaseAgentService implements IBaseAgent {
         this.internalHost = agentOpts.internalHost || DEFAULT_INTERNAL_HOST;
         this.externalHost = agentOpts.externalHost || DEFAULT_EXTERNAL_HOST;
         this.adminURL = `http://${this.internalHost}:${agentOpts.adminPort}`;
-        this.endpoint = `${this.externalHost}:${agentOpts.httpPort}`;
+        this.endpoint = `http://${this.externalHost}:${agentOpts.httpPort}`;
         this.genesisData = agentOpts.genesisData;
         this.webhookURL = '';
         this.webhookPort = '';
