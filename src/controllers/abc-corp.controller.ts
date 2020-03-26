@@ -5,7 +5,7 @@ import { AGENT_PORT, ADMIN_PORT } from '../constant';
 export class ABCCorpController implements IBaseController {
     public path = '/';
     public router = Router();
-    private agentService: ABCCorpAgentService = new ABCCorpAgentService(AGENT_PORT, ADMIN_PORT, false);
+    private agentService: ABCCorpAgentService = new ABCCorpAgentService(AGENT_PORT, AGENT_PORT + 1, false);
     constructor() {
         this.initRoutes();
         this.agentService.bootstrap();

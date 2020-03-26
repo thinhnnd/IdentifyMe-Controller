@@ -9,7 +9,7 @@ export const DEFAULT_POSTGRES = Boolean(process.env.POSTGRES)
 
 export const AGENT_MODULE = process.env.AGENT_MODULE
 export const ADMIN_PORT = process.env.ADMIN_PORT
-export const AGENT_PORT = process.env.AGENT_PORT
+export const AGENT_PORT: number = Number(process.env.AGENT_PORT)
 export const WEB_UI_PORT = process.env.WEB_UI_PORT
 const RUNMODE = process.env.RUNMODE;
 

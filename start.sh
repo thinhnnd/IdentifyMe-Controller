@@ -10,19 +10,22 @@ shift
 if [ "$AGENT" = "uit" ]; then
 	AGENT_MODULE="UIT-University"
 	AGENT_PORT=8020
-  ADMIN_PORT=5020
+  AGENT_PORT_RANGE=8020-8027
+  # ADMIN_PORT=5020
   WEB_UI_PORT=3020
 	# AGENT_PORT_RANGE=8020-8027
 elif [ "$AGENT" = "abc-corp" ]; then
 	AGENT_MODULE="ABC-Corporation"
 	AGENT_PORT=8030
-  ADMIN_PORT=5030
+  AGENT_PORT_RANGE=8030-8037
+  # ADMIN_PORT=5030
   WEB_UI_PORT=3030
 	# AGENT_PORT_RANGE=8030-8037
 elif [ "$AGENT" = "vcb-bank" ]; then
 	AGENT_MODULE="VCB-Bank"
 	AGENT_PORT=8040
-  ADMIN_PORT=5040
+  AGENT_PORT_RANGE=8040-8047
+  # ADMIN_PORT=5040
   WEB_UI_PORT=3040
 	# AGENT_PORT_RANGE=8040-8047
 else
@@ -31,7 +34,7 @@ else
 fi
 export AGENT_MODULE
 export AGENT_PORT
-export ADMIN_PORT
+# export ADMIN_PORT
 export WEB_UI_PORT
 
 if [ -z "${PWD_HOST_FQDN}" ]; then
@@ -86,4 +89,6 @@ DOCKER=${DOCKER:-docker}
 TMP="$(cut -d'/' -f2 <<<"$IMAGE")"
 NAME="$(cut -d':' -f1 <<<"$TMP")"
 echo "Starting $NAME..."
-$DOCKER run $DOCKER_ENV --name $NAME --rm -it -p ${WEB_UI_PORT} -p ${AGENT_PORT} -p ${ADMIN_PORT} $IMAGE #--port $AGENT_PORT 
+$DOCKER run $DOCKER_ENV --name $NAME --rm -it \
+  -p 0.0.0.0:$AGENT_PORT_RANGE:$AGENT_PORT_RANGE \
+  $IMAGE

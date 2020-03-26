@@ -5,7 +5,7 @@ import { AGENT_PORT, ADMIN_PORT } from '../constant';
 export class UITController implements IBaseController {
     public path = '/';
     public router = Router();
-    private agentService: UITAgentService = new UITAgentService(AGENT_PORT, ADMIN_PORT, false);
+    private agentService: UITAgentService = new UITAgentService(AGENT_PORT, AGENT_PORT + 1, false);
     constructor() {
         this.initRoutes();
         this.agentService.bootstrap();

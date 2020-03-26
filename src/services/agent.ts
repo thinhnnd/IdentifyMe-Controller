@@ -62,8 +62,8 @@ export class BaseAgentService implements IBaseAgent {
         this.usePostgres = !agentOpts.usePostgres ? DEFAULT_POSTGRES : agentOpts.usePostgres;
         this.storageType = agentOpts.args['storageType'];
         this.walletType = agentOpts.args.hasOwnProperty('walletType') ? agentOpts.args['walletType'] : 'indy';
-        this.walletName = agentOpts.args.hasOwnProperty('walletName') ? agentOpts.args['walletName'] : this.agentName + '-wallet';
-        this.walletKey = agentOpts.args.hasOwnProperty('walletKey') ? agentOpts.args['walletKey'] : this.agentName + '-wallet-key';
+        this.walletName = agentOpts.args.hasOwnProperty('walletName') ? agentOpts.args['walletName'] : this.agentName.toLowerCase() + '-wallet';
+        this.walletKey = agentOpts.args.hasOwnProperty('walletKey') ? agentOpts.args['walletKey'] : this.agentName.toLowerCase() + '-wallet-key';
         this.extractArgs = agentOpts.args;
         this.postgresConfig = {
             'url': `${this.internalHost}:5432`,
@@ -173,7 +173,7 @@ export class BaseAgentService implements IBaseAgent {
     private async getAgentArgs(): Promise<string[]> {
         const options = [
             ['--endpoint', this.endpoint],
-            ['--label', this.agentName],
+            ['--label', this.agentName.toLowerCase()],
             '--auto-ping-connection',
             '--auto-respond-messages',
             ['--inbound-transport', 'http', '0.0.0.0', this.httpPort.toString()],
@@ -208,7 +208,7 @@ export class BaseAgentService implements IBaseAgent {
         }
         const childProcess = spawn('aca-py', ['start', ...options]);
         childProcess.stdout.on('data', data => {
-            console.log('ACA-Py' + data.toString());
+            console.log(`Agent ${this.agentName} started` + data.toString());
         });
         childProcess.stderr.on('data', data => {
             console.log(`Stderr: ${data.toString()}`);
