@@ -51,7 +51,7 @@ export class BaseAgentService implements IBaseAgent {
         this.adminURL = `http://${this.internalHost}:${agentOpts.adminPort}`;
         this.endpoint = RUNMODE === 'docker' ?
             `http://${this.externalHost}:${agentOpts.httpPort}` :
-            `http://${this.externalHost.replace('{PORT}', agentOpts.httpPort.toString())}:${agentOpts.httpPort}`;
+            `http://${this.externalHost.replace('{PORT}', agentOpts.httpPort.toString())}`;
         this.genesisData = agentOpts.genesisData;
         this.webhookURL = '';
         this.webhookPort = '';
@@ -175,7 +175,7 @@ export class BaseAgentService implements IBaseAgent {
     private async getAgentArgs(): Promise<string[]> {
         const options = [
             ['--endpoint', this.endpoint],
-            ['--label', this.agentName.toLowerCase()],
+            ['--label', this.agentName],
             '--auto-ping-connection',
             '--auto-respond-messages',
             ['--inbound-transport', 'http', '0.0.0.0', this.httpPort.toString()],
