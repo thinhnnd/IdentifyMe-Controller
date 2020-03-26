@@ -3,7 +3,7 @@ import { flatMapDeep } from 'lodash';
 import { spawn } from 'child_process';
 import { performance } from 'perf_hooks';
 
-import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT } from '../constant';
+import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE } from '../constant';
 import { IBaseAgent, AgentOptions, CreatedSchema, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
 import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults } from '../interface/api';
 
@@ -49,7 +49,9 @@ export class BaseAgentService implements IBaseAgent {
         this.internalHost = agentOpts.internalHost || DEFAULT_INTERNAL_HOST;
         this.externalHost = agentOpts.externalHost || DEFAULT_EXTERNAL_HOST;
         this.adminURL = `http://${this.internalHost}:${agentOpts.adminPort}`;
-        this.endpoint = `http://${this.externalHost}:${agentOpts.httpPort}`;
+        this.endpoint = RUNMODE === 'docker' ?
+            `http://${this.externalHost}:${agentOpts.httpPort}` :
+            `http://${this.externalHost.replace('{PORT}', agentOpts.httpPort.toString())}:${agentOpts.httpPort}`;
         this.genesisData = agentOpts.genesisData;
         this.webhookURL = '';
         this.webhookPort = '';

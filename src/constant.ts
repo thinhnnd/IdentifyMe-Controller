@@ -26,8 +26,8 @@ else if (RUNMODE === 'pwd') {
     DEFAULT_EXTERNAL_HOST = process.env.DOCKERHOST || "host.docker.internal";
 }
 
-
 export {
+    RUNMODE,
     DEFAULT_INTERNAL_HOST,
     DEFAULT_EXTERNAL_HOST
 }
