@@ -11,6 +11,7 @@
     "baseUrl": "./",
     "incremental": true,
     "allowJs": true,
+    "moduleResolution": "node"
   },
   "include": [
     "./src/**/*"
