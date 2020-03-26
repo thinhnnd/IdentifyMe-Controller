@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { IBaseController } from '../interface';
-import { UITAgentService } from '../services/UIT.service';
+import { UITAgentService } from 'src/services/UIT.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
 export class UITController implements IBaseController {
     public path = '/';
