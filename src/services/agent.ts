@@ -215,6 +215,7 @@ export class BaseAgentService implements IBaseAgent {
         });
         childProcess.on('close', (code) => {
             console.log(`Child process exited with code ${code}`);
+            process.exit(code);
         });
         childProcess.on("error", (err) => {
             console.log("Child Process error:", err);
