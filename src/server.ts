@@ -21,5 +21,6 @@ const agent = new App({
         express.urlencoded({ extended: true }),
         morgan("dev")
     ],
-})
+});
+// Register webhook server
 agent.listen(DEFAULT_INTERNAL_HOST);

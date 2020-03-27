@@ -11,23 +11,17 @@ if [ "$AGENT" = "uit" ]; then
 	AGENT_MODULE="UIT-University"
 	AGENT_PORT=8020
   AGENT_PORT_RANGE=8020-8027
-  # ADMIN_PORT=5020
   WEB_UI_PORT=3020
-	# AGENT_PORT_RANGE=8020-8027
 elif [ "$AGENT" = "abc-corp" ]; then
 	AGENT_MODULE="ABC-Corporation"
 	AGENT_PORT=8030
   AGENT_PORT_RANGE=8030-8037
-  # ADMIN_PORT=5030
   WEB_UI_PORT=3030
-	# AGENT_PORT_RANGE=8030-8037
 elif [ "$AGENT" = "vcb-bank" ]; then
 	AGENT_MODULE="VCB-Bank"
 	AGENT_PORT=8040
   AGENT_PORT_RANGE=8040-8047
-  # ADMIN_PORT=5040
   WEB_UI_PORT=3040
-	# AGENT_PORT_RANGE=8040-8047
 else
 	echo "Please specify which agent you want to run. Choose from 'uit', 'abc-corp' or 'vcb-bank'."
 	exit 1

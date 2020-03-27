@@ -2,13 +2,13 @@ import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { flatMapDeep } from 'lodash';
 import { spawn } from 'child_process';
 import { performance } from 'perf_hooks';
-
+import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE } from '../constant';
 import { IBaseAgent, AgentOptions, CreatedSchema, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
 import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults } from '../interface/api';
 
-console.log("DEFAULT_INTERNAL_HOST:", DEFAULT_INTERNAL_HOST);
-console.log("DEFAULT_EXTERNAL_HOST:", DEFAULT_EXTERNAL_HOST);
+const web = express();
+
 export class BaseAgentService implements IBaseAgent {
     /*Agent name */
     agentName: string;
@@ -223,7 +223,7 @@ export class BaseAgentService implements IBaseAgent {
             console.log("Child Process error:", err);
         });
     }
-    async detectAgentConnected(): Promise<void> {
+    async detectProcess(): Promise<void> {
         function sleep(milliseconds: number) {
             var start = new Date().getTime();
             for (var i = 0; i < 1e7; i++) {
@@ -255,6 +255,35 @@ export class BaseAgentService implements IBaseAgent {
             console.log(`${this.agentName} has been started`);
         } catch (error) {
             console.log(error);
+        }
+    }
+    async webhookListeners(webhookPort: string | number) {
+        this.webhookPort = webhookPort;
+        if (RUNMODE === 'pwd') this.webhookURL = `http://localhost:${webhookPort}/webhooks`;
+        else `http://${this.externalHost}:${webhookPort}/webhooks`;
+        const app = express();
+        app.post('/webhooks/topic/:topic', this.reciveWebhook);
+        app.listen(webhookPort);
+    }
+    private async reciveWebhook(req: express.Request, res: express.Response) {
+        const topic = req.params['topic'];
+        const payload = req.body;
+        await this.processHandler(topic, payload);
+        res.status(200).send('OK');
+    }
+    /**
+     * 
+     * @param topic Name of the handler function, start with `handle_*`
+     * @example 'handle_connections'
+     */
+    private async processHandler(topic: string, payload: any) {
+        if (topic !== 'webhook') {
+            const handler = `handle_${topic}`;
+            const methodHandler: Function = this[handler];
+            if (methodHandler) {
+                console.log(`Agent called controller webhook: ${handler} with payload ${JSON.stringify(payload)}`)
+            }
+            else console.log(`Agent ${this.agentName} has no method ${handler} to handle webhook on topic ${topic}`)
         }
     }
     async fetchTiming() {

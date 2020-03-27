@@ -6,7 +6,6 @@ export interface AppOptions {
     controllers: any
 }
 export interface IBaseController {
-    initRoutes(): any
 }
 export interface IBaseAgent {
     agentName: string

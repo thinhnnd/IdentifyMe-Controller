@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { IBaseController } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
+import { getGenesisTxns } from '../utils';
 export class UITController implements IBaseController {
     public path = '/';
     public router = Router();
@@ -10,32 +11,9 @@ export class UITController implements IBaseController {
         this.initRoutes();
         this.agentService.bootstrap();
     }
-    public initRoutes() {
+    private initRoutes() {
         this.router.get('/', (req: Request, res: Response) => {
             res.send(`<h1> This agent is ${this.agentService.agentName}</h1>`);
         });
-        // this.registerSchema();
-        // this.createCredentialsDefinition();
-        // this.getCredDef();
     }
-    // private registerSchema() {
-    //     this.router.post('/schemas', (req: Request, res: Response) => this.agentService.agentRegisterSchema(req, res));
-    // }
-    // private createCredentialsDefinition() {
-    //     this.router.post('/create-cred-def', async (req: Request, res: Response) => {
-    //         const result = await this.agentService.createCredentialsDefinition(req.body);
-    //         res.json(result.data.credential_definition_id);
-    //     });
-    // }
-    // private getCredDef() {
-    //     this.router.get('cred-def', async (req: Request, res: Response) => {
-    //         const result = await this.agentService.getCredDef(req.params["credential_definition_id"]);
-    //         res.json(result.data.credential_definition);
-    //     });
-    // }
-    // private getAllSchemas() {
-    //     this.router.get('/schemas', async (req: Request, res: Response) => {
-    //         const result = await this.agentService.getAllSchemas(req.body)
-    //     })
-    // }
 }

@@ -29,12 +29,14 @@ export class UITAgentService extends BaseAgentService {
         try {
             const genesis = await getGenesisTxns();
             this.genesisData = genesis;
+            //TODO: listen webhook
+            this.webhookListeners(Number(this.httpPort) + 2);
             await this.registerDID();
             console.log('Register DID:', this.did);
             console.log('Starting process...');
             await this.startProcess();
-            console.log('Detecting connection from: ' + this.agentName);
-            await this.detectAgentConnected();
+            console.log(`Detecting agent ${this.agentName} subprocess`);
+            await this.detectProcess();
             console.log('Admin URL at:', this.adminURL);
             console.log('Endpoint at:', this.endpoint);
         } catch (error) {
