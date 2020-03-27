@@ -262,21 +262,26 @@ export class BaseAgentService implements IBaseAgent {
         if (RUNMODE === 'pwd') this.webhookURL = `http://localhost:${webhookPort}/webhooks`;
         else `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
-        app.post('/webhooks/topic/:topic', this.reciveWebhook);
+        app.post('/webhooks/topic/:topic', async (req: express.Request, res: express.Response) => {
+            const topic = req.params['topic'];
+            console.log("BaseAgentService -> webhookListeners -> topic", topic);
+            const payload = req.body;
+            console.log("BaseAgentService -> webhookListeners -> payload", payload);
+            try {
+                await this.processHandler(topic, payload);
+                res.status(200).send('OK');
+            } catch (error) {
+                console.log(error);
+            }
+        });
         app.listen(webhookPort);
-    }
-    private async reciveWebhook(req: express.Request, res: express.Response) {
-        const topic = req.params['topic'];
-        const payload = req.body;
-        await this.processHandler(topic, payload);
-        res.status(200).send('OK');
     }
     /**
      * 
      * @param topic Name of the handler function, start with `handle_*`
      * @example 'handle_connections'
      */
-    private async processHandler(topic: string, payload: any) {
+    async processHandler(topic: string, payload: any) {
         if (topic !== 'webhook') {
             const handler = `handle_${topic}`;
             const methodHandler: Function = this[handler];

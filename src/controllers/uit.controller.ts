@@ -2,7 +2,6 @@ import { Request, Response, Router } from 'express';
 import { IBaseController } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
-import { getGenesisTxns } from '../utils';
 export class UITController implements IBaseController {
     public path = '/';
     public router = Router();
