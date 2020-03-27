@@ -45,6 +45,6 @@ export class UITAgentService extends BaseAgentService {
     }
     public async handle_connections() {
         //TODO: handler for connection events
-        console.log('handle_connections called');
+        console.log(`${new Date().toUTCString()}:handle_connections called`);
     }
 }

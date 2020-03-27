@@ -264,9 +264,10 @@ export class BaseAgentService implements IBaseAgent {
         const app = express();
         app.post('/webhooks/topic/:topic', async (req: express.Request, res: express.Response) => {
             const topic = req.params['topic'];
-            console.log("BaseAgentService -> webhookListeners -> topic", topic);
+            console.log(req);
+            console.log(new Date().toUTCString() + "BaseAgentService -> webhookListeners -> topic", topic);
             const payload = req.body;
-            console.log("BaseAgentService -> webhookListeners -> payload", payload);
+            console.log(new Date().toUTCString() + "BaseAgentService -> webhookListeners -> payload", payload);
             try {
                 await this.processHandler(topic, payload);
                 res.status(200).send('OK');
@@ -285,12 +286,11 @@ export class BaseAgentService implements IBaseAgent {
         if (topic !== 'webhook') {
             const handler = `handle_${topic}`;
             const methodHandler: Function = this[handler];
-            console.log("BaseAgentService -> processHandler -> methodHandler", methodHandler)
             if (methodHandler) {
-                console.log(`Agent called controller webhook: ${handler} with payload ${JSON.stringify(payload)}`);
+                console.log(`${new Date().toUTCString()} Agent called controller webhook: ${handler} with payload ${JSON.stringify(payload)}`);
                 await methodHandler();
             }
-            else console.log(`Agent ${this.agentName} has no method ${handler} to handle webhook on topic ${topic}`)
+            else console.log(`${new Date().toUTCString()} Agent ${this.agentName} has no method ${handler} to handle webhook on topic ${topic}`)
         }
     }
     async fetchTiming() {
