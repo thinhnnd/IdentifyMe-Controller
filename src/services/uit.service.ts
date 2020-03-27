@@ -43,4 +43,8 @@ export class UITAgentService extends BaseAgentService {
             console.error(error);
         }
     }
+    public async handle_connections() {
+        //TODO: handler for connection events
+        console.log('handle_connections called');
+    }
 }

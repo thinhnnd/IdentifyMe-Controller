@@ -285,8 +285,10 @@ export class BaseAgentService implements IBaseAgent {
         if (topic !== 'webhook') {
             const handler = `handle_${topic}`;
             const methodHandler: Function = this[handler];
+            console.log("BaseAgentService -> processHandler -> methodHandler", methodHandler)
             if (methodHandler) {
-                console.log(`Agent called controller webhook: ${handler} with payload ${JSON.stringify(payload)}`)
+                console.log(`Agent called controller webhook: ${handler} with payload ${JSON.stringify(payload)}`);
+                await methodHandler();
             }
             else console.log(`Agent ${this.agentName} has no method ${handler} to handle webhook on topic ${topic}`)
         }
