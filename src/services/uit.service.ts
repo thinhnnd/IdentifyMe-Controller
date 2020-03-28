@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { BaseAgentService } from './agent';
 import { RegisterSchemasDTO } from '../dtos';
 import { getGenesisTxns } from '../utils';
-import { SEED, AGENT_MODULE } from '../constant';
+import { SEED, AGENT_MODULE, WEB_HOOK_URL } from '../constant';
 import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload } from '../interface';
 import { generate } from 'randomstring';
 export class UITAgentService extends BaseAgentService {
@@ -20,7 +20,6 @@ export class UITAgentService extends BaseAgentService {
             args: extractArgs,
             seed: seed
         });
-        // console.log(this)
         this.connectionId = '';
         this.credAttrs = [];
     }
@@ -29,8 +28,9 @@ export class UITAgentService extends BaseAgentService {
         try {
             const genesis = await getGenesisTxns();
             this.genesisData = genesis;
-            //TODO: listen webhook
-            this.webhookListeners(Number(this.httpPort) + 2);
+            if (!WEB_HOOK_URL)
+                this.webhookListeners(Number(this.httpPort) + 2);
+            else console.log('Webhook listening at ', WEB_HOOK_URL);
             await this.registerDID();
             console.log('Register DID:', this.did);
             console.log('Starting process...');
@@ -49,14 +49,12 @@ export class UITAgentService extends BaseAgentService {
      * @description handle connection webhook
      */
     public async handle_connections(message: ConnectionsPayload) {
-        console.log("UITAgentService -> handle_connections -> message", message)
-        //TODO: handler for connection events
         if (message["connection_id"] === this.connectionId) {
+            console.log("connection_id:", this.connectionId);
             if (message["state"] === "active") {
                 console.log(`Connected to ${message["their_label"]}`);
             }
         }
-        console.log(`${new Date().toUTCString()}:handle_connections called`);
     }
 
     public async handle_issue_credential(payload: IssueCredentialPayload) {
