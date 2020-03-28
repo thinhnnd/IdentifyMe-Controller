@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { App } from './app';
 import { UITController } from './controllers/uit.controller';
-import { DEFAULT_INTERNAL_HOST, WEB_UI_PORT, AGENT_MODULE } from './constant';
+import { DEFAULT_INTERNAL_HOST, WEB_UI_PORT, AGENT_MODULE, AGENT_PORT } from './constant';
 import * as morgan from 'morgan';
 import { ABCCorpController } from './controllers/abc-corp.controller';
 const agentsModule = ['UIT-University', 'ABC-Corporation', 'VCB-Bank'];
@@ -12,7 +12,7 @@ if (AGENT_MODULE === agentsModule[0]) agentController = new UITController();
 else if (AGENT_MODULE === agentsModule[1]) agentController = new ABCCorpController();
 else console.log("This agent controller is not supported");
 const agent = new App({
-    port: WEB_UI_PORT,
+    port: AGENT_PORT + 3,
     controllers: [
         agentController
     ],
