@@ -266,12 +266,13 @@ export class BaseAgentService implements IBaseAgent {
         const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
-            console.log(new Date().toUTCString() + "webhookListeners -> topic", topic);
+            console.log(":webhookListeners -> req.path", req.path);
+            console.log(new Date().toUTCString() + ":webhookListeners -> topic", topic);
             const payload = req.body;
-            console.log(new Date().toUTCString() + "webhookListeners -> payload", payload);
+            console.log(new Date().toUTCString() + ":webhookListeners -> payload", payload);
             try {
                 await this.processHandler(topic, payload);
-                res.status(200).send('OK');
+                return res.status(200);
             } catch (error) {
                 console.log(error);
             }
