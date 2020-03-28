@@ -3,7 +3,7 @@ import { BaseAgentService } from './agent';
 import { RegisterSchemasDTO } from '../dtos';
 import { getGenesisTxns } from '../utils';
 import { SEED, AGENT_MODULE } from '../constant';
-import { SchemaSendRequest } from 'src/interface/api';
+import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload } from '../interface';
 import { generate } from 'randomstring';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[]
@@ -43,8 +43,32 @@ export class UITAgentService extends BaseAgentService {
             console.error(error);
         }
     }
-    public async handle_connections() {
+    /**
+     * 
+     * @param message payload from agent
+     * @description handle connection webhook
+     */
+    public async handle_connections(message: ConnectionsPayload) {
+        console.log("UITAgentService -> handle_connections -> message", message)
         //TODO: handler for connection events
+        if (message["connection_id"] === this.connectionId) {
+            if (message["state"] === "active") {
+                console.log(`Connected to ${message["their_label"]}`);
+            }
+        }
         console.log(`${new Date().toUTCString()}:handle_connections called`);
+    }
+
+    public async handle_issue_credential(payload: IssueCredentialPayload) {
+        console.log("UITAgentService -> handle_issue_credential -> payload", payload)
+        //TODO
+    }
+    public async handle_present_proof(payload: PresentProofPayload) {
+        console.log("UITAgentService -> handle_present_proof -> payload", payload)
+        //TODO
+    }
+    public async handle_basicmessages(payload: BasicMessagesPayload) {
+        console.log("UITAgentService -> handle_basicmessages -> payload", payload)
+        //TODO
     }
 }
