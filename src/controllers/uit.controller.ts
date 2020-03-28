@@ -46,8 +46,6 @@ export class UITController implements IBaseController {
     }
     private async createSchemasRoute() {
         this.router.post('/schemas', async (req, res) => {
-            console.log("req body", req.body);
-
             try {
                 const body: SchemaSendRequest = {
                     attributes: req.body.attributes,
