@@ -147,8 +147,11 @@ export class BaseAgentService implements IBaseAgent {
     }
 
     /* Connection */
-    async createConnectionInvitation(query: ConnectionInvitationQuery): Promise<AxiosResponse<InvitationResult>> {
-        return await this.adminRequest('/connections/create-invitation', { method: 'POST', params: query })
+    async createConnectionInvitation(query: ConnectionInvitationQuery): Promise<InvitationResult> {
+        const result: InvitationResult = await this.adminRequest('/connections/create-invitation', { method: 'POST', params: query });
+        this.connectionId = result.connection_id;
+        console.log("Invitation:", result);
+        return result;
     }
     async reciveConnectionInvitation(
         query: InvitationQuery,

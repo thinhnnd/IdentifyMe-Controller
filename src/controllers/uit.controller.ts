@@ -31,9 +31,8 @@ export class UITController implements IBaseController {
                     public: req.body.public,
                 }
                 const result = await this.agentService.createConnectionInvitation(query);
-                console.log(`result: ${result.data}`);
-                this.agentService.connectionId = result.data.connection_id;
-                res.json(result.data);
+                console.log(`result: ${result}`);
+                res.json(result);
             } catch (error) {
                 res.json(error);
             }
