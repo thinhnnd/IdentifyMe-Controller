@@ -3,7 +3,7 @@ import { flatMapDeep } from 'lodash';
 import { spawn } from 'child_process';
 import { performance } from 'perf_hooks';
 import * as express from 'express';
-import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE } from '../constant';
+import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
 import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
 import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults } from '../interface/api';
 
@@ -53,7 +53,7 @@ export class BaseAgentService implements IBaseAgent {
             `http://${this.externalHost}:${agentOpts.httpPort}` :
             `http://${this.externalHost.replace('{PORT}', agentOpts.httpPort.toString())}`;
         this.genesisData = agentOpts.genesisData;
-        this.webhookURL = '';
+        this.webhookURL = WEB_HOOK_URL || '';
         this.webhookPort = '';
         this.httpPort = agentOpts.httpPort;
         this.adminPort = agentOpts.adminPort;

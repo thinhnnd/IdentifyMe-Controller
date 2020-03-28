@@ -76,7 +76,9 @@ fi
 if ! [ -z "$GENESIS_URL" ]; then
 	DOCKER_ENV="${DOCKER_ENV} -e GENESIS_URL=${GENESIS_URL}"
 fi
-
+if ! [ -z "$WEB_HOOK_URL"]; then
+  DOCKER_ENV="${DOCKER_ENV} -e WEB_HOOK_URL=${WEB_HOOK_URL}"
+fi
 
 echo $DOCKER_ENV
 DOCKER=${DOCKER:-docker}
