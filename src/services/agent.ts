@@ -2,6 +2,7 @@ import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { flatMapDeep } from 'lodash';
 import { spawn } from 'child_process';
 import { performance } from 'perf_hooks';
+import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
 import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
@@ -264,6 +265,8 @@ export class BaseAgentService implements IBaseAgent {
         else `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
         const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
+        app.use(express.json());
+        app.use(bodyParser.urlencoded({ extended: true }));
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
             console.log(`[${new Date().toUTCString()}] WebhookListeners -> topic`, topic);
