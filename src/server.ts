@@ -18,10 +18,8 @@ const agent = new App({
         agentController
     ],
     middlewares: [
-        express.json(),
-        bodyParser(),
+        bodyParser.json(),
         bodyParser.urlencoded({ extended: true }),
-        express.urlencoded({ extended: true }),
         morgan("dev")
     ],
 });
