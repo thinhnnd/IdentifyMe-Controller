@@ -258,16 +258,16 @@ export class BaseAgentService implements IBaseAgent {
             console.log(error);
         }
     }
-    async webhookListeners(webhookPort: string | number) {
+    async webhookListeners(webhookPort: number) {
         this.webhookPort = webhookPort;
         if (RUNMODE === 'pwd') this.webhookURL = `http://localhost:${webhookPort}/webhooks`;
         else `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
-        app.post('/webhooks/topic/:topic', async (req: express.Request, res: express.Response) => {
+        app.post('/webhooks/:topic', async (req: express.Request, res: express.Response) => {
             const topic = req.params['topic'];
-            console.log(new Date().toUTCString() + "BaseAgentService -> webhookListeners -> topic", topic);
+            console.log(new Date().toUTCString() + "webhookListeners -> topic", topic);
             const payload = req.body;
-            console.log(new Date().toUTCString() + "BaseAgentService -> webhookListeners -> payload", payload);
+            console.log(new Date().toUTCString() + "webhookListeners -> payload", payload);
             try {
                 await this.processHandler(topic, payload);
                 res.status(200).send('OK');
@@ -275,7 +275,7 @@ export class BaseAgentService implements IBaseAgent {
                 console.log(error);
             }
         });
-        app.listen(webhookPort);
+        app.listen(webhookPort, '0.0.0.0', () => console.log('Webhook listening on port ', webhookPort));
     }
     /**
      * 

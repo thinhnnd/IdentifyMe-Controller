@@ -25,10 +25,10 @@ export class UITController implements IBaseController {
         this.router.post('/connections', async (req: Request, res: Response) => {
             try {
                 const query: ConnectionInvitationQuery = {
-                    alias: req.params.alias,
-                    accept: req.params.accept,
-                    multi_use: req.params.multi_use,
-                    public: req.params.public,
+                    alias: req.body.alias,
+                    accept: req.body.accept,
+                    multi_use: req.body.multi_use,
+                    public: req.body.public,
                 }
                 const result = await this.agentService.createConnectionInvitation(query);
                 console.log(`result: ${result.data}`);
