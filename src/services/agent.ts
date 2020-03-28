@@ -4,8 +4,8 @@ import { spawn } from 'child_process';
 import { performance } from 'perf_hooks';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE } from '../constant';
-import { IBaseAgent, AgentOptions, CreatedSchema, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
-import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults } from '../interface/api';
+import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
+import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults } from '../interface/api';
 
 const web = express();
 
@@ -138,7 +138,8 @@ export class BaseAgentService implements IBaseAgent {
         }
     }
     async getAllSchemas(filter: FilterSchema) {
-        return await this.adminRequest('/schemas/created/', { method: 'GET', params: { ...filter } });
+        const schemas: SchemaSendResults[] = await this.adminRequest('/schemas/created/', { method: 'GET', params: { ...filter } });
+        return schemas;
     }
     async getAllSchemasOfIssuer(issuerDid: string) {
         return await this.adminRequest('/schemas/created/', { method: 'GET', params: { schema_issuer_did: issuerDid } });
@@ -264,7 +265,6 @@ export class BaseAgentService implements IBaseAgent {
         const app = express();
         app.post('/webhooks/topic/:topic', async (req: express.Request, res: express.Response) => {
             const topic = req.params['topic'];
-            console.log(req);
             console.log(new Date().toUTCString() + "BaseAgentService -> webhookListeners -> topic", topic);
             const payload = req.body;
             console.log(new Date().toUTCString() + "BaseAgentService -> webhookListeners -> payload", payload);
@@ -288,7 +288,7 @@ export class BaseAgentService implements IBaseAgent {
             const methodHandler: Function = this[handler];
             if (methodHandler) {
                 console.log(`${new Date().toUTCString()} Agent called controller webhook: ${handler} with payload ${JSON.stringify(payload)}`);
-                await methodHandler();
+                await methodHandler(payload);
             }
             else console.log(`${new Date().toUTCString()} Agent ${this.agentName} has no method ${handler} to handle webhook on topic ${topic}`)
         }

@@ -1,5 +1,5 @@
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
-import { CredentialDefinitionSendRequest, SchemaSendRequest, SchemaSendResults } from './api';
+export * from './webhook-payload';
 export interface AppOptions {
     port: number | string;
     middlewares: any
@@ -16,10 +16,6 @@ export interface IBaseAgent {
     genesisData: string
     seed: string
     adminRequest: (requestPath: string, config: AxiosRequestConfig) => Promise<any>
-    registerDID: (ledgerURL: string, alias: string) => Promise<void>
-    registerSchema: (schemaBody: SchemaSendRequest) => Promise<SchemaSendResults>
-    createCredentialsDefinition: (body: CredentialDefinitionSendRequest) => Promise<AxiosResponse>
-    getAllSchemas: (filter: FilterSchema) => Promise<AxiosResponse>
 }
 export interface AgentOptions {
     agentName: string
