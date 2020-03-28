@@ -8,17 +8,12 @@ import { generate } from 'randomstring';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[]
     constructor(httpPort: number | string, adminPort: number | string, noAuto: Boolean) {
-        /**
-         * @description used for arguments in aca-py cli, read more by typing: aca-py start -h
-         */
-        const extractArgs = !noAuto ? [] : ["--auto-accept-invites", "--auto-accept-requests"];
-        const seed = generate({ length: 32, charset: "alphabetic" });
         super({
             agentName: AGENT_MODULE,
             httpPort: httpPort,
             adminPort: adminPort,
-            args: extractArgs,
-            seed: seed
+            args: !noAuto ? [] : ["--auto-accept-invites", "--auto-accept-requests"],
+            seed: generate({ length: 32, charset: "alphabetic" })
         });
         this.connectionId = '';
         this.credAttrs = [];
@@ -37,18 +32,21 @@ export class UITAgentService extends BaseAgentService {
             await this.startProcess();
             console.log(`Detecting agent ${this.agentName} subprocess`);
             await this.detectProcess();
+            //default connection invitation should be create after agent started
+            await this.createConnectionInvitation({ alias: this.agentName });
             console.log('Admin URL at:', this.adminURL);
             console.log('Endpoint at:', this.endpoint);
         } catch (error) {
             console.error(error);
         }
     }
+
     /**
-     * 
-     * @param message payload from agent
-     * @description handle connection webhook
+     * @param message payload of agent
+     * @description webhook handler for connections
      */
-    public async handle_connections(message: ConnectionsPayload) {
+    handle_connections = async (message: ConnectionsPayload) => {
+        console.log(this);
         if (message["connection_id"] === this.connectionId) {
             console.log("connection_id:", this.connectionId);
             if (message["state"] === "active") {
@@ -56,6 +54,7 @@ export class UITAgentService extends BaseAgentService {
             }
         }
     }
+
 
     public async handle_issue_credential(payload: IssueCredentialPayload) {
         console.log("UITAgentService -> handle_issue_credential -> payload", payload)
