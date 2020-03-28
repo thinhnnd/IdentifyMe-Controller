@@ -263,7 +263,7 @@ export class BaseAgentService implements IBaseAgent {
         if (RUNMODE === 'pwd') this.webhookURL = `http://localhost:${webhookPort}/webhooks`;
         else `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
-        app.post('/webhooks/:topic', async (req: express.Request, res: express.Response) => {
+        app.post('/webhooks/topic/:topic', async (req: express.Request, res: express.Response) => {
             const topic = req.params['topic'];
             console.log(new Date().toUTCString() + "webhookListeners -> topic", topic);
             const payload = req.body;
