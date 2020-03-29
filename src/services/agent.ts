@@ -127,19 +127,23 @@ export class BaseAgentService implements IBaseAgent {
         const crefDef: CredentialDefinitionSendResults = await this.adminRequest('/credential-definitions', { method: 'POST', data: body });
         return crefDef;
     }
-    async getCredDef(crefDefId: string)
-        : Promise<AxiosResponse<CredentialDefinitionGetResults>> {
-        return await this.adminRequest('/credential-definitions/' + crefDefId, { method: 'GET' });
-    }
-    async getAllCredentialDefinitions() {
+    async getCredDef(crefDefId: string): Promise<CredentialDefinitionGetResults> {
         try {
-            const response: CredentialDefinitionGetResults = await this.adminRequest('/credential-definitions/created', { method: 'GET' });
+            const response = await this.adminRequest('/credential-definitions/' + crefDefId, { method: 'GET' });
             return response;
         } catch (error) {
             throw error;
         }
     }
-    async getSpecialCredDef(params: CredentialDefinitionsCreatedParams) {        
+    async getAllCredentialDefinitions() {
+        try {
+            const response: CredentialDefinitionsCreatedResults = await this.adminRequest('/credential-definitions/created', { method: 'GET' });
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+    async getSpecialCredDef(params: CredentialDefinitionsCreatedParams) {
         try {
             const response: CredentialDefinitionsCreatedResults = await
                 this.adminRequest('/credential-definitions/created', {
@@ -162,17 +166,24 @@ export class BaseAgentService implements IBaseAgent {
             const credDefforSchema = await this.createCredentialsDefinition({ schema_id: data.schema_id });
             return { data, credDefforSchema };
         } catch (error) {
-            console.error('RegisterSchema Agent Error' + error.message);
             throw error;
         }
     }
     async getAllSchemas(filter: FilterSchema) {
-        const schemas: SchemasCreatedResults = await this.adminRequest('/schemas/created/', { method: 'GET', params: { ...filter } });
-        return schemas;
+        try {
+            const schemas: SchemasCreatedResults = await this.adminRequest('/schemas/created', { method: 'GET', params: filter });
+            return schemas;
+        } catch (error) {
+            throw error;
+        }
     }
     async getAllSchemasOfIssuer(issuerDid: string) {
-        const schemas: SchemasCreatedResults = await this.adminRequest('/schemas/created/', { method: 'GET', params: { schema_issuer_did: issuerDid } });
-        return schemas;
+        try {
+            const schemas: SchemasCreatedResults = await this.adminRequest('/schemas/created', { method: 'GET', params: { schema_issuer_did: issuerDid } });
+            return schemas;
+        } catch (error) {
+            throw error;
+        }
     }
 
     //#endregion
