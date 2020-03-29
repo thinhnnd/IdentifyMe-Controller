@@ -5,10 +5,8 @@ import { performance } from 'perf_hooks';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
-import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery } from '../interface/index';
-import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults } from '../interface/api';
-
-const web = express();
+import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams } from '../interface/index';
+import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, CredentialOfferRequest, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults } from '../interface/api';
 
 export class BaseAgentService implements IBaseAgent {
     /*Agent name */
@@ -84,6 +82,7 @@ export class BaseAgentService implements IBaseAgent {
         'admin_account': process.env.POSTGRES_ADMIN_ACCOUNT,
         'admin_password': process.env.POSTGRES_ADMIN_PASSWORD,
     }
+    //#region Admin request
     async adminRequest(requestPath: string, config: AxiosRequestConfig) {
         try {
             config.baseURL = this.adminURL;
@@ -97,6 +96,9 @@ export class BaseAgentService implements IBaseAgent {
         }
 
     }
+    //#endregion
+
+    //#region DID 
     async registerDID(ledgerURL: string = '', alias: string = ''): Promise<void> {
         console.log(`Registering agent ${this.agentName} with seed ${this.seed}`);
 
@@ -117,47 +119,76 @@ export class BaseAgentService implements IBaseAgent {
             throw new Error('Error while registering did for agent: ' + this.agentName);
         }
     }
+    //#endregion
 
-    /* Credentials Definition */
-    async createCredentialsDefinition(body: CredentialDefinitionSendRequest)
-        : Promise<AxiosResponse<CredentialDefinitionSendResults>> {
-        return await this.adminRequest('/credential-definitions', { method: 'POST', data: body });
+    //#region Credentials Definition 
+    private async createCredentialsDefinition(body: CredentialDefinitionSendRequest)
+        : Promise<CredentialDefinitionSendResults> {
+        const crefDef: CredentialDefinitionSendResults = await this.adminRequest('/credential-definitions', { method: 'POST', data: body });
+        return crefDef;
     }
     async getCredDef(crefDefId: string)
         : Promise<AxiosResponse<CredentialDefinitionGetResults>> {
         return await this.adminRequest('/credential-definitions/' + crefDefId, { method: 'GET' });
     }
+    async getAllCredentialDefinitions() {
+        try {
+            const response: CredentialDefinitionGetResults = await this.adminRequest('/credential-definitions/created', { method: 'GET' });
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+    async getSpecialCredDef(params: CredentialDefinitionsCreatedParams) {        
+        try {
+            const response: CredentialDefinitionsCreatedResults = await
+                this.adminRequest('/credential-definitions/created', {
+                    method: 'GET',
+                    params: { ...params }
+                });
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+    //#endregion
 
-    /* SCHEMA */
-    async registerSchema(schemaBody: SchemaSendRequest) {
-        console.log("BaseAgentService -> registerSchema -> schemaBody", schemaBody)
+    //#region Schemas
+    async registerSchemaAndCredDef(schemaBody: SchemaSendRequest) {
         try {
             const data: SchemaSendResults = await this.adminRequest('/schemas', { method: 'POST', data: schemaBody });
-            return data;
+            console.log("RegisterSchemaAndCredDef -> data", data);
+            //create credential definition
+            const credDefforSchema = await this.createCredentialsDefinition({ schema_id: data.schema_id });
+            return { data, credDefforSchema };
         } catch (error) {
             console.error('RegisterSchema Agent Error' + error.message);
+            throw error;
         }
     }
     async getAllSchemas(filter: FilterSchema) {
-        const schemas: SchemaSendResults[] = await this.adminRequest('/schemas/created/', { method: 'GET', params: { ...filter } });
+        const schemas: SchemasCreatedResults = await this.adminRequest('/schemas/created/', { method: 'GET', params: { ...filter } });
         return schemas;
     }
     async getAllSchemasOfIssuer(issuerDid: string) {
-        return await this.adminRequest('/schemas/created/', { method: 'GET', params: { schema_issuer_did: issuerDid } });
+        const schemas: SchemasCreatedResults = await this.adminRequest('/schemas/created/', { method: 'GET', params: { schema_issuer_did: issuerDid } });
+        return schemas;
     }
 
-    /* Connection */
+    //#endregion
+
+    //#region Connections
     async createConnectionInvitation(query: ConnectionInvitationQuery): Promise<InvitationResult> {
         const result: InvitationResult = await this.adminRequest('/connections/create-invitation', { method: 'POST', params: query });
         this.connectionId = result.connection_id;
         console.log("Invitation:", result);
         return result;
     }
-    async reciveConnectionInvitation(
+    async receiveConnectionInvitation(
         query: InvitationQuery,
         body: ConnectionInvitation
     ): Promise<AxiosResponse<ConnectionRecord>> {
-        return await this.adminRequest('/connections/recive-invitation', {
+        return await this.adminRequest('/connections/receive-invitation', {
             method: 'POST',
             data: body,
             params: {
@@ -175,8 +206,13 @@ export class BaseAgentService implements IBaseAgent {
     async fetchConnectionRecord(connectionId: string): Promise<AxiosResponse<ConnectionRecord>> {
         return await this.adminRequest(`/connections/${connectionId}`, { method: 'GET' });
     }
+    async getConnections() {
+        const result: ConnectionList = await this.adminRequest(`/connections`, { method: 'get' });
+        return result;
+    }
+    //#endregion
 
-
+    //#region cloud agent process
     private async getAgentArgs(): Promise<string[]> {
         const options = [
             ['--endpoint', this.endpoint],
@@ -262,6 +298,9 @@ export class BaseAgentService implements IBaseAgent {
             console.log(error);
         }
     }
+    //#endregion
+
+    //#region webhook handler
     async webhookListeners(webhookPort: number) {
         this.webhookPort = webhookPort;
         if (RUNMODE === 'pwd') this.webhookURL = `http://localhost:${webhookPort}/webhooks`;
@@ -300,6 +339,19 @@ export class BaseAgentService implements IBaseAgent {
             else console.log(`${new Date().toUTCString()} Agent ${this.agentName} has no method ${handler} to handle webhook on topic ${topic}`)
         }
     }
+    //#endregion
+
+    //#region  Issue Credential
+
+    public async issuerSendOffer(offerRequest: V10CredentialOfferRequest) {
+        const response: V10CredentialExchange = await this.adminRequest('/issue-credential/send-offer', {
+            method: "post",
+            data: offerRequest
+        });
+        return response;
+    }
+
+    //#region health check
     async fetchTiming() {
         const resp = await this.adminRequest('/timing', { method: 'GET' });
         return resp.data['timing'];
@@ -307,4 +359,7 @@ export class BaseAgentService implements IBaseAgent {
     async resetTiming() {
         await this.adminRequest("/status/reset", { method: 'POST' })
     }
+    //#endregion
+
+
 }

@@ -56,8 +56,7 @@ nextip(){
     NEXT_IP=$(printf '%d.%d.%d.%d\n' `echo $NEXT_IP_HEX | sed -r 's/(..)/0x\1 /g'`)
     echo "$NEXT_IP"
 }
-SEED=`docker run --rm sofianinho/pwgen-alpine -s 32 1`
-echo $SEED
+# SEED=`docker run --rm sofianinho/pwgen-alpine -s 32 1`
 # DOCKERHOST=$(nextip $DOCKERHOST)
 echo $DOCKERHOST
 IMAGE="identifyme/${AGENT}-agent:1.0.0"
@@ -65,7 +64,7 @@ echo "Preparing agent image for $IMAGE..."
 docker build -t $IMAGE -f Dockerfile . || exit 1
 
 
-DOCKER_ENV="-e RUNMODE=${RUNMODE} -e DOCKERHOST=${DOCKERHOST} -e SEED=${SEED} -e AGENT_MODULE=${AGENT_MODULE} -e AGENT_PORT=${AGENT_PORT} -e ADMIN_PORT=${ADMIN_PORT} -e WEB_UI_PORT=${WEB_UI_PORT}"
+DOCKER_ENV="-e RUNMODE=${RUNMODE} -e DOCKERHOST=${DOCKERHOST} -e AGENT_MODULE=${AGENT_MODULE} -e AGENT_PORT=${AGENT_PORT} -e ADMIN_PORT=${ADMIN_PORT} -e WEB_UI_PORT=${WEB_UI_PORT}"
 if ! [ -z "$POSTGRES" ]; then
 	DOCKER_ENV="${DOCKER_ENV} -e POSTGRES=1 -e RUST_BACKTRACE=1"
 fi
@@ -79,7 +78,9 @@ fi
 if ! [ -z "$WEB_HOOK_URL"]; then
   DOCKER_ENV="${DOCKER_ENV} -e WEB_HOOK_URL=${WEB_HOOK_URL}"
 fi
-
+if ! [ -z "$SEED"]; then
+  DOCKER_ENV="${DOCKER_ENV} -e SEED=${SEED}"
+fi
 echo $DOCKER_ENV
 DOCKER=${DOCKER:-docker}
 TMP="$(cut -d'/' -f2 <<<"$IMAGE")"
