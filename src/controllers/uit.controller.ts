@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
-import { SchemaSendRequest, V10CredentialOfferRequest, CredentialPreview, CredentialDefinitionGetResults, CredentialDefinitionsCreatedResults } from 'src/interface/api';
+import { SchemaSendRequest, V10CredentialOfferRequest, CredentialPreview, CredentialDefinitionGetResults, CredentialDefinitionsCreatedResults, SchemasCreatedResults, SchemaGetResults } from 'src/interface/api';
 export class UITController implements IBaseController {
     public path = '/';
     public router = Router();
@@ -91,9 +91,13 @@ export class UITController implements IBaseController {
         })
     }
     private async getSchemas() {
-        this.router.get("/schemas", async (req, res) => {
+        this.router.get("/schemas/:schema_id", async (req, res) => {
+            const schemaId = req.params.schema_id;
             try {
-                const schema = await this.agentService.getAllSchemas({ schema_issuer_did: this.agentService.did });
+                let schema: SchemasCreatedResults | SchemaGetResults;
+                if (schemaId) schema = await this.agentService.getSchema(schemaId)
+                else
+                    schema = await this.agentService.getAllSchemas({ schema_issuer_did: this.agentService.did });
                 res.json(schema);
             } catch (error) {
                 console.log(error);
@@ -103,21 +107,20 @@ export class UITController implements IBaseController {
     }
     private async getCredentialDefinitions() {
         this.router.get('/credential-definitions', async (req, res) => {
-            let result: CredentialDefinitionGetResults | CredentialDefinitionsCreatedResults;
             const params: CredentialDefinitionsCreatedParams = {
-                schema_id: req.body.schema_id,
-                schema_issuer_did: req.params.schema_issuer_did,
-                schema_name: req.params.schema_name,
-                schema_version: req.params.schema_version,
-                issuer_did: req.params.issuer_did,
-                cred_def_id: req.params.cred_def_id,
+                schema_id: req.query.schema_id,
+                schema_issuer_did: req.query.schema_issuer_did,
+                schema_name: req.query.schema_name,
+                schema_version: req.query.schema_version,
+                issuer_did: req.query.issuer_did,
+                cred_def_id: req.query.cred_def_id,
             };
-            const credential_definition_id = req.params.credential_definition_id;
+            const credential_definition_id = req.query.credential_definition_id;
             try {
-                if (!req.params)
-                    result = await this.agentService.getAllCredentialDefinitions();
-                else if (credential_definition_id) result = await this.agentService.getCredDef(credential_definition_id)
-                else result = await this.agentService.getSpecialCredDef(params);
+                let result: CredentialDefinitionGetResults | CredentialDefinitionsCreatedResults;
+                if (params && credential_definition_id) result = await this.agentService.getCredDef(credential_definition_id)
+                else if (params && !credential_definition_id) result = await this.agentService.getSpecialCredDef(params)
+                else result = await this.agentService.getAllCredentialDefinitions();
                 res.json(result);
             } catch (error) {
                 console.log(error);

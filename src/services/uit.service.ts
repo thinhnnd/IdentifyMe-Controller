@@ -5,6 +5,7 @@ import { getGenesisTxns } from '../utils';
 import { SEED, AGENT_MODULE, WEB_HOOK_URL } from '../constant';
 import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload } from '../interface';
 import { generate } from 'randomstring';
+import { V10CredentialExchange } from 'src/interface/api';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[];
     public credState: {};
@@ -36,12 +37,16 @@ export class UITAgentService extends BaseAgentService {
             console.log(`Detecting agent ${this.agentName} subprocess`);
             await this.detectProcess();
             //default connection invitation should be create after agent started
-            await this.createConnectionInvitation({ alias: this.agentName });
+            // await this.createConnectionInvitation({ alias: this.agentName });
             console.log('Admin URL at:', this.adminURL);
             console.log('Endpoint at:', this.endpoint);
         } catch (error) {
             console.error(error);
         }
+    }
+    private async issueCredential(credential_exchange_id: string, data: any) {
+        const response: V10CredentialExchange = await this.adminRequest(`/issue-credential/records/${credential_exchange_id}/issue`, { method: 'POST', data: data })
+        return response
     }
     /**
      * @param message payload of agent
@@ -58,7 +63,7 @@ export class UITAgentService extends BaseAgentService {
     }
 
     handle_issue_credential = async (payload: IssueCredentialPayload) => {
-        console.log("UITAgentService -> handle_issue_credential -> payload", payload)
+        // console.log("UITAgentService -> handle_issue_credential -> payload", payload)
         const state = payload["state"];
         const credential_exchange_id = payload["credential_exchange_id"]
         const prev_state = this.credState[credential_exchange_id];
@@ -75,46 +80,36 @@ export class UITAgentService extends BaseAgentService {
         switch (state) {
             case "offer_sent":
                 //B1: Issuer send credential offer to Holder
+                console.log("offer_sent");
                 console.log(`#1: ${this.agentName} send credential offer to Holder`);
-                console.log("After POST send-offer: offer_sent:", payload);
-
                 break;
             case "request_received":
-                //B3: Issuer received credential request
-                console.log(`#3: ${this.agentName} received credential request from Holder`);
-                console.log(payload);
-
-                //TODO: create payload for credential
-                // cred_attrs = self.cred_attrs[message["credential_definition_id"]]
-                // cred_preview = {
-                //     "@type": CRED_PREVIEW_TYPE,
-                //     "attributes": [
-                //         {"name": n, "value": v} for (n, v) in cred_attrs.items()
-                //     ],
-                // }
-                // await self.admin_POST(
-                //     f"/issue-credential/records/{credential_exchange_id}/issue",
-                //     {
-                //         "comment": f"Issuing credential, exchange {credential_exchange_id}",
-                //         "credential_preview": cred_preview,
-                //     },
-                // )
-
+                //B4: Issuer received credential request from Holder
+                console.log(`#4: ${this.agentName} received credential request from Holder`);
+                const data = {
+                    credential_preview: payload.credential_proposal_dict.credential_proposal,
+                    comment: payload.credential_proposal_dict.comment
+                }
+                console.log("UITAgentService -> handle_issue_credential -> data", data);
+                const response = await this.issueCredential(credential_exchange_id, data);
+                console.log("UITAgentService -> handle_issue_credential -> response", response.state)
                 break;
 
             case "proposal_received":
-                console.log("credential_received:", payload);
+                console.log("credential_received:");
                 break;
             case "offer_received":
-                console.log("offer_received with payload", payload);
+                //B2: The holder received the offer
+                //B3: The holder send credential request
+                console.log("offer_received");
                 break;
             case "credential_received":
-                console.log("credential_received", payload);
+                console.log("credential_received");
 
                 //TODO 3
                 break;
             case "issued":
-                console.log("issued:", payload);
+                console.log("issued:");
                 break;
             default:
                 break;
