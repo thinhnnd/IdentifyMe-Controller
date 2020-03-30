@@ -53,12 +53,29 @@ export class UITAgentService extends BaseAgentService {
      * @description webhook handler for connections
      */
     handle_connections = async (message: ConnectionsPayload) => {
-        // console.log(this);
+        const state = message.state;
         if (message["connection_id"] === this.connectionId) {
             console.log("connection_id:", this.connectionId);
-            if (message["state"] === "active") {
-                console.log(`Connected to ${message["their_label"]}`);
+            switch (state) {
+                case "invitation":
+                    console.log("invitation created");
+                case "request":
+                    console.log("request created");
+                case "response":
+                    console.log("response received");
+                case "active":
+                    console.log("connection active");
+                    console.log(`Connected to ${message["their_label"]}`);
+                case "inactive":
+                    console.log("connection inactive");
+                case "error":
+                    console.log("connection error");
+                default:
+                    break;
             }
+            // if (message["state"] === "active") {
+            //     console.log(`Connected to ${message["their_label"]}`);
+            // }
         }
     }
 

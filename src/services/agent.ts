@@ -87,8 +87,6 @@ export class BaseAgentService implements IBaseAgent {
         try {
             config.baseURL = this.adminURL;
             config.url = requestPath;
-            console.log("BaseAgentService -> adminRequest -> config", config)
-
             const response = await Axios.request(config);
             return response.data;
         } catch (error) {
@@ -101,7 +99,6 @@ export class BaseAgentService implements IBaseAgent {
     //#region DID 
     async registerDID(ledgerURL: string = '', alias: string = ''): Promise<void> {
         console.log(`Registering agent ${this.agentName} with seed ${this.seed}`);
-
         ledgerURL = LEDGER_URL || `http://${this.externalHost}:9000`;
         const data = {
             alias: alias || this.agentName,
@@ -111,7 +108,6 @@ export class BaseAgentService implements IBaseAgent {
         try {
             const response = await Axios.post(`${ledgerURL}/register`, data);
             if (response.data) {
-                console.log("BaseAgentService -> response.data:", response.data);
                 this.did = response.data['did']
             }
         } catch (error) {
@@ -161,7 +157,6 @@ export class BaseAgentService implements IBaseAgent {
     async registerSchemaAndCredDef(schemaBody: SchemaSendRequest) {
         try {
             const data: SchemaSendResults = await this.adminRequest('/schemas', { method: 'POST', data: schemaBody });
-            console.log("RegisterSchemaAndCredDef -> data", data);
             //create credential definition
             const credDefforSchema = await this.createCredentialsDefinition({ schema_id: data.schema_id });
             return { data, credDefforSchema };
@@ -329,9 +324,7 @@ export class BaseAgentService implements IBaseAgent {
         app.use(bodyParser.urlencoded({ extended: true }));
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
-            console.log(`[${new Date().toUTCString()}] WebhookListeners -> topic`, topic);
             const payload = req.body;
-            console.log(`[${new Date().toUTCString()}] WebhookListeners -> payload`, payload);
             try {
                 await this.processHandler(topic, payload);
                 return res.status(200);
@@ -339,7 +332,7 @@ export class BaseAgentService implements IBaseAgent {
                 console.log(error);
             }
         });
-        app.listen(webhookPort, '0.0.0.0', () => console.log('Webhook listening on port ', webhookPort));
+        app.listen(webhookPort, '0.0.0.0', () => console.log('Webhook listening on port:', webhookPort));
     }
     /**
      * 
@@ -351,7 +344,6 @@ export class BaseAgentService implements IBaseAgent {
             const handler = `handle_${topic}`;
             const methodHandler: Function = this[handler];
             if (methodHandler) {
-                console.log(`${new Date().toUTCString()} Agent called controller webhook: ${handler} with payload ${JSON.stringify(payload)}`);
                 await methodHandler(payload);
             }
             else console.log(`${new Date().toUTCString()} Agent ${this.agentName} has no method ${handler} to handle webhook on topic ${topic}`)
