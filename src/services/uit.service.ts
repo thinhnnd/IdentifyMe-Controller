@@ -66,6 +66,7 @@ export class UITAgentService extends BaseAgentService {
                 case "active":
                     console.log("connection active");
                     console.log(`Connected to ${message["their_label"]}`);
+                    //TODO: socket emit to notify UI
                 case "inactive":
                     console.log("connection inactive");
                 case "error":
