@@ -7,7 +7,7 @@ import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
 import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams } from '../interface/index';
 import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults } from '../interface/api';
-
+import * as cors from 'cors';
 export class BaseAgentService implements IBaseAgent {
     /*Agent name */
     agentName: string;
@@ -322,6 +322,7 @@ export class BaseAgentService implements IBaseAgent {
         const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
         app.use(express.json());
         app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(cors());
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
             const payload = req.body;

@@ -4,6 +4,7 @@ import { UITController } from './controllers/uit.controller';
 import { DEFAULT_INTERNAL_HOST, WEB_UI_PORT, AGENT_MODULE, AGENT_PORT } from './constant';
 import * as morgan from 'morgan';
 import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
 import { ABCCorpController } from './controllers/abc-corp.controller';
 const agentsModule = ['UIT-University', 'ABC-Corporation', 'VCB-Bank'];
 
@@ -20,7 +21,8 @@ const agent = new App({
     middlewares: [
         bodyParser.json(),
         bodyParser.urlencoded({ extended: true }),
-        morgan("dev")
+        morgan("dev"),
+        cors()
     ],
 });
 // Register webhook server
