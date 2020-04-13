@@ -322,20 +322,30 @@ export class BaseAgentService implements IBaseAgent {
         else `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
         const webhookServer = createServer(app);
-        const io = socketIO(webhookServer);
+        const io = socketIO.listen(webhookServer, { origins: '*' })
         app.set('io', io);
         const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
         app.use(express.json());
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(cors());
+        console.log("io instance origins", io.origins());
+        io.on("connection", socket => {
+            console.log("Connected in webhook socket");
+            socket.emit("connected", "Hello client");
+        })
+        app.get("/", (req, res) => {
+            res.send("Webhook is running");
+        })
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
             let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
             payload = req.body;
-            const io: socketIO.Server = req.app.get('io');
-            io.on("connection", socket => {
+            const socketIo: socketIO.Server = req.app.get('io');
+            console.log("socketIo instance origins", socketIo.origins());
+            socketIo.on("connection", socket => {
+                console.log("UI client has been connected");
                 if (topic === 'connections' && ['active', 'response'].includes(payload.state)) {
-                    io.to(payload.connection_id).emit(payload.connection_id, payload);
+                    socketIo.to(payload.connection_id).emit(payload.connection_id, payload);
                 }
             })
             try {
