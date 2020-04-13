@@ -322,7 +322,7 @@ export class BaseAgentService implements IBaseAgent {
         else `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
         const webhookServer = createServer(app);
-        const io = socketIO.listen(webhookServer, { origins: '*' })
+        const io = socketIO.listen(webhookServer, { origins: '*:*' })
         app.set('io', io);
         const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
         app.use(express.json());
@@ -331,23 +331,20 @@ export class BaseAgentService implements IBaseAgent {
         console.log("io instance origins", io.origins());
         io.on("connection", socket => {
             console.log("Connected in webhook socket");
-            socket.emit("connected", "Hello client");
-        })
+            socket.emit("connected", "message from webhook server");
+        });
         app.get("/", (req, res) => {
             res.send("Webhook is running");
-        })
+        });
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
             let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
             payload = req.body;
             const socketIo: socketIO.Server = req.app.get('io');
-            console.log("socketIo instance origins", socketIo.origins());
-            socketIo.on("connection", socket => {
-                console.log("UI client has been connected");
-                if (topic === 'connections' && ['active', 'response'].includes(payload.state)) {
-                    socketIo.to(payload.connection_id).emit(payload.connection_id, payload);
-                }
-            })
+            if (topic === 'connections' && ['active', 'response'].includes(payload.state)) {
+                console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
+                socketIo.sockets.emit(payload.connection_id, payload);
+            }
             try {
                 await this.processHandler(topic, payload);
                 return res.status(200);
