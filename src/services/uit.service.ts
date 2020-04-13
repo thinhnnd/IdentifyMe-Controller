@@ -59,18 +59,24 @@ export class UITAgentService extends BaseAgentService {
             switch (state) {
                 case "invitation":
                     console.log("invitation created");
+                    break;
                 case "request":
                     console.log("request created");
+                    break;
                 case "response":
                     console.log("response received");
+                    break;
                 case "active":
                     console.log("connection active");
                     console.log(`Connected to ${message["their_label"]}`);
-                    //TODO: socket emit to notify UI
+                    break;
+                //TODO: socket emit to notify UI
                 case "inactive":
                     console.log("connection inactive");
+                    break;
                 case "error":
                     console.log("connection error");
+                    break;
                 default:
                     break;
             }

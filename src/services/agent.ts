@@ -5,9 +5,11 @@ import { performance } from 'perf_hooks';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
-import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams } from '../interface/index';
+import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams, IssueCredentialPayload, BasicMessagesPayload, PresentProofPayload, ConnectionsPayload } from '../interface/index';
 import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults } from '../interface/api';
 import * as cors from 'cors';
+import * as socketIO from 'socket.io';
+import { createServer } from 'http';
 export class BaseAgentService implements IBaseAgent {
     /*Agent name */
     agentName: string;
@@ -319,13 +321,30 @@ export class BaseAgentService implements IBaseAgent {
         if (RUNMODE === 'pwd') this.webhookURL = `http://localhost:${webhookPort}/webhooks`;
         else `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
+        const webhookServer = createServer(app);
+        const io = socketIO.listen(webhookServer, { origins: '*:*' })
+        app.set('io', io);
         const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
         app.use(express.json());
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(cors());
+        console.log("io instance origins", io.origins());
+        io.on("connection", socket => {
+            console.log("Connected in webhook socket");
+            socket.emit("connected", "message from webhook server");
+        });
+        app.get("/", (req, res) => {
+            res.send("Webhook is running");
+        });
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
-            const payload = req.body;
+            let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
+            payload = req.body;
+            const socketIo: socketIO.Server = req.app.get('io');
+            if (topic === 'connections' && ['active', 'response'].includes(payload.state)) {
+                console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
+                socketIo.sockets.emit(payload.connection_id, payload);
+            }
             try {
                 await this.processHandler(topic, payload);
                 return res.status(200);
@@ -333,7 +352,7 @@ export class BaseAgentService implements IBaseAgent {
                 console.log(error);
             }
         });
-        app.listen(webhookPort, '0.0.0.0', () => console.log('Webhook listening on port:', webhookPort));
+        webhookServer.listen(webhookPort, '0.0.0.0', () => console.log('Webhook listening on port:', webhookPort));
     }
     /**
      * 

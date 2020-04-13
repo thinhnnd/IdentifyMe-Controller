@@ -1,4 +1,4 @@
-export interface IssueCredentialPayload {
+export type IssueCredentialPayload ={
     credential_exchange_id?: string
     connection_id?: string
     thread_id?: string
@@ -18,7 +18,7 @@ export interface IssueCredentialPayload {
     auto_issue?: boolean
     error_msg?: string
 }
-export interface PresentProofPayload {
+export type PresentProofPayload = {
     presentation_exchange_id?: string
     connection_id?: string
     thread_id?: string
@@ -31,7 +31,7 @@ export interface PresentProofPayload {
     auto_present?: boolean
     error_msg?: string
 }
-export interface ConnectionsPayload {
+export type ConnectionsPayload = {
     connection_id?: string
     state?: "init" | "invitation" | "request" | "response" | "active" | "error" | "inactive"
     my_did?: string
@@ -48,7 +48,7 @@ export interface ConnectionsPayload {
     invitation_mode?: "once" | "multi"
     alias?: string
 }
-export interface BasicMessagesPayload {
+export type BasicMessagesPayload = {
     connection_id: string
     message_id: string
     content: string

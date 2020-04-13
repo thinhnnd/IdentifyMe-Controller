@@ -22,7 +22,7 @@ const agent = new App({
         bodyParser.json(),
         bodyParser.urlencoded({ extended: true }),
         morgan("dev"),
-        cors()
+        cors({ origin: "*" }),
     ],
 });
 // Register webhook server
