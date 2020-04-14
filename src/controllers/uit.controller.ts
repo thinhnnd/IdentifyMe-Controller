@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams } from '../interface';
+import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
 import { SchemaSendRequest, V10CredentialOfferRequest, CredentialPreview, CredentialDefinitionGetResults, CredentialDefinitionsCreatedResults, SchemasCreatedResults, SchemaGetResults } from 'src/interface/api';
@@ -19,7 +19,9 @@ export class UITController implements IBaseController {
         this.createSchemasRoute();
         this.issueCredentialRoute();
         this.getConnections();
-        this.getSchemas();
+        this.getSchemaById();
+        this.getAllSchemas();
+        this.findSchemas();
         this.getCredentialDefinitions();
     }
     /**
@@ -90,14 +92,39 @@ export class UITController implements IBaseController {
             }
         })
     }
-    private async getSchemas() {
-        this.router.get("/schemas/:schema_id", async (req, res) => {
+    private async getSchemaById() {
+        this.router.get("/schema/:schema_id", async (req, res) => {
             const schemaId = req.params.schema_id;
             try {
-                let schema: SchemasCreatedResults | SchemaGetResults;
-                if (schemaId) schema = await this.agentService.getSchema(schemaId)
-                else
-                    schema = await this.agentService.getAllSchemas({ schema_issuer_did: this.agentService.did });
+                const schema = await this.agentService.getSchema(schemaId)
+                res.json(schema);
+            } catch (error) {
+                console.log(error);
+                res.json(error);
+            }
+        });
+    }
+    private async getAllSchemas() {
+        this.router.get("/schemas", async (req, res) => {
+            try {
+                const schema = await this.agentService.getAllSchemas({ schema_issuer_did: this.agentService.did });
+                res.json(schema);
+            } catch (error) {
+                console.log(error);
+                res.json(error);
+            }
+        });
+    }
+    private async findSchemas() {
+        this.router.get("/schemas", async (req, res) => {
+            try {
+                const filter: FilterSchema = {
+                    schema_id: req.body.schema_id,
+                    schema_issuer_did: req.body.schema_issuer_did,
+                    schema_name: req.body.schema_name,
+                    schema_version: req.body.schema_version,
+                }
+                const schema = await this.agentService.getAllSchemas(filter);
                 res.json(schema);
             } catch (error) {
                 console.log(error);
