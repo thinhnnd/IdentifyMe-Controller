@@ -22,7 +22,10 @@ export class UITController implements IBaseController {
         this.getSchemaById();
         this.getAllSchemas();
         this.findSchemas();
-        this.getCredentialDefinitions();
+
+        this.getAllCredentialDefinitions();
+        this.getCredentialDefinitionsByFilter();
+        this.getCredentialDefinitionsById();
     }
     /**
      * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -132,8 +135,19 @@ export class UITController implements IBaseController {
             }
         });
     }
-    private async getCredentialDefinitions() {
+    private async getAllCredentialDefinitions() {
         this.router.get('/credential-definitions', async (req, res) => {
+            try {
+                const result = await this.agentService.getAllCredentialDefinitions();
+                res.json(result);
+            } catch (error) {
+                console.log(error);
+                res.json(error);
+            }
+        })
+    }
+    private async getCredentialDefinitionsByFilter() {
+        this.router.get('/credential-definitions-filter', async (req, res) => {
             const params: CredentialDefinitionsCreatedParams = {
                 schema_id: req.query.schema_id,
                 schema_issuer_did: req.query.schema_issuer_did,
@@ -142,12 +156,20 @@ export class UITController implements IBaseController {
                 issuer_did: req.query.issuer_did,
                 cred_def_id: req.query.cred_def_id,
             };
-            const credential_definition_id = req.query.credential_definition_id;
             try {
-                let result: CredentialDefinitionGetResults | CredentialDefinitionsCreatedResults;
-                if (params && credential_definition_id) result = await this.agentService.getCredDef(credential_definition_id)
-                else if (params && !credential_definition_id) result = await this.agentService.getSpecialCredDef(params)
-                else result = await this.agentService.getAllCredentialDefinitions();
+                const result = await this.agentService.getSpecialCredDef(params);
+                res.json(result);
+            } catch (error) {
+                console.log(error);
+                res.json(error);
+            }
+        })
+    }
+    private async getCredentialDefinitionsById() {
+        this.router.get('/credential-definition/:credential_definition_id', async (req, res) => {
+            const credential_definition_id = req.params.credential_definition_id;
+            try {
+                const result = await this.agentService.getCredDef(credential_definition_id)
                 res.json(result);
             } catch (error) {
                 console.log(error);
