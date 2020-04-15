@@ -99,8 +99,12 @@ export class UITController implements IBaseController {
         this.router.get("/schema/:schema_id", async (req, res) => {
             const schemaId = req.params.schema_id;
             try {
-                const schema = await this.agentService.getSchema(schemaId)
-                res.json(schema);
+                const schema = await this.agentService.getSchema(schemaId);
+                const crefDef = await this.agentService.getSpecialCredDef({ schema_id: schemaId });
+                const result = {
+                    schema_json: { ...schema.schema_json, credential_definition_id: crefDef.credential_definition_ids[0] }
+                }
+                res.json(result);
             } catch (error) {
                 console.log(error);
                 res.json(error);
@@ -111,6 +115,14 @@ export class UITController implements IBaseController {
         this.router.get("/schemas", async (req, res) => {
             try {
                 const schema = await this.agentService.getAllSchemas({ schema_issuer_did: this.agentService.did });
+                //Get the credential_definition_id for each schema
+                // const result = await Promise.all(schema.schema_ids.map(async schemaId => {
+                //     const credDef = await this.agentService.getSpecialCredDef({ schema_id: schemaId });
+                //     return {
+                //         schema_id: schemaId,
+                //         credential_definition_ids: credDef.credential_definition_ids[0]
+                //     }
+                // }));
                 res.json(schema);
             } catch (error) {
                 console.log(error);
