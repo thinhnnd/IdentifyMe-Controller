@@ -34,7 +34,7 @@ export class ABCCorpAgentService extends BaseAgentService {
             console.log('Starting process...');
             await this.startProcess();
             console.log('Detecting connection from: ' + this.agentName);
-            await this.detectAgentConnected();
+            await this.detectProcess();
             console.log('Admin URL at:', this.adminURL);
             console.log('Endpoint at:', this.endpoint);
         } catch (error) {

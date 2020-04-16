@@ -8,14 +8,14 @@ export class App {
         this.app = express();
         this.port = appOptions.port
         this.applyMiddlewares(appOptions.middlewares);
-        this.applyRoutes(appOptions.controllers);
+        this.applyControllers(appOptions.controllers);
     }
     private applyMiddlewares(middleWares: { forEach: (arg0: (middleWare: any) => void) => void; }) {
         middleWares.forEach((middleware) => {
             this.app.use(middleware);
         })
     }
-    private applyRoutes(controllers: { forEach: (arg0: (controller: any) => void) => void; }) {
+    private applyControllers(controllers: { forEach: (arg0: (controller: any) => void) => void; }) {
         controllers.forEach(controller => {
             this.app.use('/', controller.router)
         })

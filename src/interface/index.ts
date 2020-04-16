@@ -1,12 +1,11 @@
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
-import { CredentialDefinitionSendRequest, SchemaSendRequest, SchemaSendResults } from './api';
+export * from './webhook-payload';
 export interface AppOptions {
     port: number | string;
     middlewares: any
     controllers: any
 }
 export interface IBaseController {
-    initRoutes(): any
 }
 export interface IBaseAgent {
     agentName: string
@@ -17,10 +16,6 @@ export interface IBaseAgent {
     genesisData: string
     seed: string
     adminRequest: (requestPath: string, config: AxiosRequestConfig) => Promise<any>
-    registerDID: (ledgerURL: string, alias: string) => Promise<void>
-    registerSchema: (schemaBody: SchemaSendRequest) => Promise<SchemaSendResults>
-    createCredentialsDefinition: (body: CredentialDefinitionSendRequest) => Promise<AxiosResponse>
-    getAllSchemas: (filter: FilterSchema) => Promise<AxiosResponse>
 }
 export interface AgentOptions {
     agentName: string
@@ -54,4 +49,12 @@ export interface ConnectionInvitationQuery {
 export interface InvitationQuery {
     alias: string,
     accept: "manual" | "auto"
+}
+export interface CredentialDefinitionsCreatedParams {
+    schema_id?: string
+    schema_issuer_did?: string
+    schema_name?: string
+    schema_version?: string
+    issuer_did?: string
+    cred_def_id?: string
 }
