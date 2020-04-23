@@ -225,6 +225,12 @@ export class BaseAgentService implements IBaseAgent {
         const result: ConnectionList = await this.adminRequest(`/connections`, { method: 'get' });
         return result;
     }
+    async sendTrustPing(connectionId: string) {
+        const response = await this.adminRequest(`/connections/${connectionId}/send-ping`, {
+            method: "POST",
+        });
+        return response
+    }
     //#endregion
 
     //#region cloud agent process
@@ -241,6 +247,7 @@ export class BaseAgentService implements IBaseAgent {
             ['--wallet-type', this.walletType],
             ['--wallet-name', this.walletName],
             ['--wallet-key', this.walletKey],
+            ['--preserve-exchange-records']
         ];
         if (this.genesisData) options.push(['--genesis-transactions', this.genesisData])
         if (this.seed) options.push(['--seed', this.seed])
@@ -411,4 +418,7 @@ export class BaseAgentService implements IBaseAgent {
     //#endregion
 
 
+    //#region 
+
+    //#endregion
 }
