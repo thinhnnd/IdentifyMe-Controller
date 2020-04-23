@@ -115,7 +115,7 @@ export class UITController implements IBaseController {
                 const schema = await this.agentService.getSchema(schemaId);
                 const crefDef = await this.agentService.getSpecialCredDef({ schema_id: schemaId });
                 const result = {
-                    schema_json: { ...schema.schema_json, credential_definition_id: crefDef.credential_definition_ids[0] }
+                    schema_json: { ...schema.schema, credential_definition_id: crefDef.credential_definition_ids[0] }
                 }
                 res.json(result);
             } catch (error) {
