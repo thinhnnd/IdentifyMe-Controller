@@ -988,7 +988,7 @@ export interface Schema {
     attrNames?: string[];
 }
 export interface SchemaGetResults {
-    schema_json?: Schema;
+    schema?: Schema;
 }
 export interface SchemaSendRequest {
     /**
