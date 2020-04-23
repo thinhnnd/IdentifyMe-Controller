@@ -63,7 +63,7 @@ export class ABCCorpAgentService extends BaseAgentService {
             const key = `0_${attr.name}_uuid`;
             requested_attributes[key] = attr;
         });
-        reqPreds.forEach(predicate => {
+        reqPreds.length > 0 && reqPreds.forEach(predicate => {
             const key = `0_${predicate.name}_GE_uuid`;
             requested_predicates[key] = predicate;
         });
@@ -175,12 +175,12 @@ export class ABCCorpAgentService extends BaseAgentService {
                 // console.log(`Process the proof provided by X`);
                 // const proof = await this.verifyPresentation(payload.presentation_exchange_id);
                 console.log('verified :', payload.verified);
-                const isProofOfEducation = payload.presentation_request.name === "Proof Of Education";
+                const isProofOfEducation = payload.presentation_request.name.includes("Education");
                 if (isProofOfEducation) {
                     payload.presentation.identifiers.forEach(id_spec => {
                         console.log(`schema_id: ${id_spec['schema_id']}`);
                         console.log(`cred_def_id: ${id_spec['cred_def_id']}`);
-                    }); 
+                    });
                 }
                 break;
             case "presentation_sent":

@@ -247,18 +247,23 @@ export class ABCCorpController implements IBaseController {
                 ...attrs
             ]
             //zero knowledge proof
-            const reqPreds: IndyProofReqPredSpec[] = [{
-                "name": bodyExample.requested_predicates.name,
-                "p_type": ">=",
-                "p_value": Number(bodyExample.requested_predicates.p_value),
-                "restrictions": bodyExample.requested_predicates.restrictions,
-            }];
+            let reqPreds: IndyProofReqPredSpec[] = [];
+            if (bodyExample.requested_predicates && bodyExample.requested_predicates.length > 0) {
+                reqPreds = [{
+                    "name": bodyExample.requested_predicates.name,
+                    "p_type": ">=",
+                    "p_value": Number(bodyExample.requested_predicates.p_value),
+                    "restrictions": bodyExample.requested_predicates.restrictions,
+                }];
+            }
+
             try {
                 const payload: SendProofRequestPayload = {
                     requested_attributes: reqAttrs,
                     requested_predicates: reqPreds,
                     proof_request_name: bodyExample.proof_request_name
                 }
+                console.log("ABCCorpController -> sendProofRequest -> payload", payload)
                 const resp = await this.agentService.buildAndSendProofRequest(bodyExample.connection_id, payload);
                 res.json(resp);
             } catch (error) {
