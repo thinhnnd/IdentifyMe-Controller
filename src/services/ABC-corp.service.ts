@@ -97,9 +97,8 @@ export class ABCCorpAgentService extends BaseAgentService {
                     console.log("request created");
                     break;
                 case "response":
-                    console.log("ABCCorpAgentService -> handle_connections -> this.connectionId", this.connectionId)
-                    // const resp = await this.sendTrustPing(this.connectionId);
-                    // console.log("response received:", resp);
+                    const resp = await this.sendTrustPing(this.connectionId, { comment: "Ping connection" });
+                    console.log("response received", resp);
                     break;
                 case "active":
                     console.log("connection active");

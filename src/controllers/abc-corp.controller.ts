@@ -246,7 +246,6 @@ export class ABCCorpController implements IBaseController {
                 { "name": "self_attested_thing" },
                 ...attrs
             ]
-            console.log("ABCCorpController -> sendProofRequest -> reqAttrs", reqAttrs)
             //zero knowledge proof
             let reqPreds: IndyProofReqPredSpec[] = [];
             if (bodyExample.requested_predicates) {
@@ -257,7 +256,6 @@ export class ABCCorpController implements IBaseController {
                     "restrictions": bodyExample.requested_predicates.restrictions,
                 }];
             }
-            console.log("ABCCorpController -> sendProofRequest -> reqPreds", reqPreds)
             try {
                 const payload: SendProofRequestPayload = {
                     requested_attributes: reqAttrs,
@@ -268,6 +266,7 @@ export class ABCCorpController implements IBaseController {
                 res.json(resp);
             } catch (error) {
                 res.json(error);
+                console.log(error);
             }
         })
     }

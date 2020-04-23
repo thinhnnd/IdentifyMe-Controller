@@ -355,20 +355,12 @@ export class BaseAgentService implements IBaseAgent {
             let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
             payload = req.body;
             const socketIo: socketIO.Server = req.app.get('io');
-            // if (topic === 'connections' && payload.state === "response") {
-            //     const resp = await this.sendTrustPing(this.connectionId);
-            //     console.log("webhook response received:", resp);
-            // }
-            // if (topic === 'connections' && ['active'].includes(payload.state)) {
-            //     console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
-            //     socketIo.sockets.emit(payload.connection_id, payload);
-            // }
+            //shared web hook handler
             if (topic === "connections") {
                 switch (payload.state) {
                     case "response":
-                        console.log("webhookListeners -> this.connectionId", this.connectionId)
-                        const resp = await this.sendTrustPing(this.connectionId, { comment: "Ping Connection" });
-                        console.log("webhook response received:", resp);
+                        console.log("SSI Client response invitation, notify for UI client with id " + payload.connection_id);
+                        socketIo.sockets.emit(payload.connection_id, payload);
                         break;
                     case "active":
                         console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
