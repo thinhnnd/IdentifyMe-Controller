@@ -92,8 +92,8 @@ export class UITAgentService extends BaseAgentService {
                     console.log("request created");
                     break;
                 case "response":
+                    // const resp = await this.sendTrustPing(this.connectionId);
                     console.log("response received");
-                    await this.sendTrustPing(this.connectionId);
                     break;
                 case "active":
                     console.log("connection active");

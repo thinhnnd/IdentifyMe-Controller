@@ -228,6 +228,7 @@ export class BaseAgentService implements IBaseAgent {
     async sendTrustPing(connectionId: string) {
         const response = await this.adminRequest(`/connections/${connectionId}/send-ping`, {
             method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
         });
         return response
     }
@@ -348,9 +349,27 @@ export class BaseAgentService implements IBaseAgent {
             let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
             payload = req.body;
             const socketIo: socketIO.Server = req.app.get('io');
-            if (topic === 'connections' && ['active', 'response'].includes(payload.state)) {
-                console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
-                socketIo.sockets.emit(payload.connection_id, payload);
+            // if (topic === 'connections' && payload.state === "response") {
+            //     const resp = await this.sendTrustPing(this.connectionId);
+            //     console.log("webhook response received:", resp);
+            // }
+            // if (topic === 'connections' && ['active'].includes(payload.state)) {
+            //     console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
+            //     socketIo.sockets.emit(payload.connection_id, payload);
+            // }
+            if (topic === "connections") {
+                switch (payload.state) {
+                    case "response":
+                        const resp = await this.sendTrustPing(this.connectionId);
+                        console.log("webhook response received:", resp);
+                        break;
+                    case "active":
+                        console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
+                        socketIo.sockets.emit(payload.connection_id, payload);
+                        break;
+                    default:
+                        break;
+                }
             }
             try {
                 await this.processHandler(topic, payload);
