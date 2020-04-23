@@ -6,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
 import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams, IssueCredentialPayload, BasicMessagesPayload, PresentProofPayload, ConnectionsPayload } from '../interface/index';
-import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults, V10PresentationExchange, V10PresentationRequestRequest } from '../interface/api';
+import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults, V10PresentationExchange, V10PresentationRequestRequest, PingRequest } from '../interface/api';
 import * as cors from 'cors';
 import * as socketIO from 'socket.io';
 import { createServer } from 'http';
@@ -225,12 +225,18 @@ export class BaseAgentService implements IBaseAgent {
         const result: ConnectionList = await this.adminRequest(`/connections`, { method: 'get' });
         return result;
     }
-    async sendTrustPing(connectionId: string) {
-        const response = await this.adminRequest(`/connections/${connectionId}/send-ping`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        });
-        return response
+    async sendTrustPing(connectionId: string, body: PingRequest) {
+        try {
+            const response = await this.adminRequest(`/connections/${connectionId}/send-ping`, {
+                method: "POST",
+                data: body
+            });
+            console.log("BaseAgentService -> sendTrustPing -> response", response)
+            return response
+        } catch (error) {
+            console.log("BaseAgentService -> sendTrustPing -> error", error)
+        }
+
     }
     //#endregion
 
@@ -360,7 +366,8 @@ export class BaseAgentService implements IBaseAgent {
             if (topic === "connections") {
                 switch (payload.state) {
                     case "response":
-                        const resp = await this.sendTrustPing(this.connectionId);
+                        console.log("webhookListeners -> this.connectionId", this.connectionId)
+                        const resp = await this.sendTrustPing(this.connectionId, { comment: "Ping Connection" });
                         console.log("webhook response received:", resp);
                         break;
                     case "active":
