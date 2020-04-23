@@ -48,6 +48,66 @@ export class UITAgentService extends BaseAgentService {
         const response: V10CredentialExchange = await this.adminRequest(`/issue-credential/records/${credential_exchange_id}/issue`, { method: 'POST', data: data })
         return response
     }
+    private async proofRequest() {
+        //dynamic attrs
+        const reqAttrs = [
+            { "name": "name", "restrictions": [{ "issuer_did": this.did }] },
+            { "name": "date", "restrictions": [{ "issuer_did": this.did }] },
+            { "name": "degree", "restrictions": [{ "issuer_did": this.did }] }
+        ]
+        /**
+         * log_status("#20 Request proof of degree from alice")
+                req_attrs = [
+                    {"name": "name", "restrictions": [{"issuer_did": agent.did}]},
+                    {"name": "date", "restrictions": [{"issuer_did": agent.did}]},
+                ]
+                if revocation:
+                    req_attrs.append(
+                        {
+                            "name": "degree",
+                            "restrictions": [{"issuer_did": agent.did}],
+                            "non_revoked": {"to": int(time.time() - 1)},
+                        },
+                    )
+                else:
+                    req_attrs.append(
+                        {"name": "degree", "restrictions": [{"issuer_did": agent.did}]}
+                    )
+                if SELF_ATTESTED:
+                    # test self-attested claims
+                    req_attrs.append({"name": "self_attested_thing"},)
+                req_preds = [
+                    # test zero-knowledge proofs
+                    {
+                        "name": "age",
+                        "p_type": ">=",
+                        "p_value": 18,
+                        "restrictions": [{"issuer_did": agent.did}],
+                    }
+                ]
+                indy_proof_request = {
+                    "name": "Proof of Education",
+                    "version": "1.0",
+                    "requested_attributes": {
+                        f"0_{req_attr['name']}_uuid": req_attr for req_attr in req_attrs
+                    },
+                    "requested_predicates": {
+                        f"0_{req_pred['name']}_GE_uuid": req_pred
+                        for req_pred in req_preds
+                    },
+                }
+                if revocation:
+                    indy_proof_request["non_revoked"] = {"to": int(time.time())}
+                proof_request_web_request = {
+                    "connection_id": agent.connection_id,
+                    "proof_request": indy_proof_request,
+                    "trace": exchange_tracing,
+                }
+                await agent.admin_POST(
+                    "/present-proof/send-request", proof_request_web_request
+                )
+         */
+    }
     /**
      * @param message payload of agent
      * @description webhook handler for connections
@@ -70,7 +130,6 @@ export class UITAgentService extends BaseAgentService {
                     console.log("connection active");
                     console.log(`Connected to ${message["their_label"]}`);
                     break;
-                //TODO: socket emit to notify UI
                 case "inactive":
                     console.log("connection inactive");
                     break;
@@ -80,9 +139,6 @@ export class UITAgentService extends BaseAgentService {
                 default:
                     break;
             }
-            // if (message["state"] === "active") {
-            //     console.log(`Connected to ${message["their_label"]}`);
-            // }
         }
     }
 
@@ -141,7 +197,32 @@ export class UITAgentService extends BaseAgentService {
     }
     handle_present_proof = async (payload: PresentProofPayload) => {
         console.log("UITAgentService -> handle_present_proof -> payload", payload)
-        //TODO
+        switch (payload.state) {
+            case "presentation_received":
+                console.log(`Process the proof provided by X`);
+                const proof = await this.verifyPresentation(payload.presentation_exchange_id);
+                console.log(proof);
+                break;
+            case "presentation_sent":
+                console.log("presentation_sent");
+                break;
+            case "request_received":
+                console.log("request_received");
+                break;
+            case "request_sent":
+                console.log("request_sent");
+                break;
+            case "verified":
+                console.log("verified");
+                break;
+            case "proposal_sent":
+                console.log("proposal_sent");
+                break;
+            case "proposal_received":
+                console.log("proposal_received");
+                break;
+            default: break;
+        }
     }
     handle_basicmessages = async (payload: BasicMessagesPayload) => {
         console.log("UITAgentService -> handle_basicmessages -> payload", payload)
