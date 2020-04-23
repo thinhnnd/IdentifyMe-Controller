@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema } from '../interface';
+import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema, SendProofRequestPayload } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
 import {
@@ -9,7 +9,9 @@ import {
     CredentialDefinitionGetResults,
     CredentialDefinitionsCreatedResults,
     SchemasCreatedResults,
-    SchemaGetResults
+    SchemaGetResults,
+    IndyProofReqAttrSpec,
+    IndyProofReqPredSpec
 }
     from 'src/interface/api';
 export class UITController implements IBaseController {
@@ -35,6 +37,8 @@ export class UITController implements IBaseController {
         this.getAllCredentialDefinitions();
         this.getCredentialDefinitionsByFilter();
         this.getCredentialDefinitionsById();
+
+        this.sendProofRequest();
     }
     /**
      * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -198,4 +202,65 @@ export class UITController implements IBaseController {
             }
         })
     }
+    //#region Proof
+    private async sendProofRequest() {
+        this.router.post('/present-proof/send-request', async (req, res) => {
+            const bodyExample = req.body;
+            // const bodyExample = {
+            //     "connection_id": "",
+            //     "proof_request_name": "Proof Of Education",
+            //     "request_attributes": {
+            //         "schema_attrs": ["name", "date", "degree"],
+            //         "restrictions": [{ "credential_definition_id": "WgWxqztrNooG92RXvxSTWv:3:CL:20:tag", "issuer_did": "WgWxqztrNooG92RXvxSTWv" }]
+            //     },
+            //     "requested_predicates": {
+            //         "name": "age",
+            //         "p_value": "18",
+            //         "restrictions": [{
+            //             "issuer_did": "",
+            //             "credential_definition_id": "",
+            //             "cred_def_id": "",
+            //             "schema_id": "",
+            //             "schema_issuer_did": "",
+            //             "schema_name": "",
+            //             "schema_version": "",
+            //         }]
+            //     }
+            // }
+            const attrs = bodyExample.request_attributes.schema_attrs.map(attr => {
+                return {
+                    name: attr,
+                    restrictions: bodyExample.request_attributes.restrictions
+                }
+            })
+            const reqAttrs: IndyProofReqAttrSpec[] = [
+                { "name": "self_attested_thing" },
+                ...attrs
+            ]
+            console.log("ABCCorpController -> sendProofRequest -> reqAttrs", reqAttrs)
+            //zero knowledge proof
+            let reqPreds: IndyProofReqPredSpec[] = [];
+            if (bodyExample.requested_predicates) {
+                reqPreds = [{
+                    "name": bodyExample.requested_predicates.name,
+                    "p_type": ">=",
+                    "p_value": Number(bodyExample.requested_predicates.p_value),
+                    "restrictions": bodyExample.requested_predicates.restrictions,
+                }];
+            }
+            console.log("ABCCorpController -> sendProofRequest -> reqPreds", reqPreds)
+            try {
+                const payload: SendProofRequestPayload = {
+                    requested_attributes: reqAttrs,
+                    requested_predicates: reqPreds,
+                    proof_request_name: bodyExample.proof_request_name
+                }
+                const resp = await this.agentService.buildAndSendProofRequest(bodyExample.connection_id, payload);
+                res.json(resp);
+            } catch (error) {
+                res.json(error);
+            }
+        })
+    }
+    //#endregion
 }

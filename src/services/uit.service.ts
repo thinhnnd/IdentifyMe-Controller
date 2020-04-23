@@ -3,9 +3,10 @@ import { BaseAgentService } from './agent';
 import { RegisterSchemasDTO } from '../dtos';
 import { getGenesisTxns } from '../utils';
 import { SEED, AGENT_MODULE, WEB_HOOK_URL } from '../constant';
-import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload } from '../interface';
+import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload, SendProofRequestPayload } from '../interface';
 import { generate } from 'randomstring';
-import { V10CredentialExchange } from 'src/interface/api';
+import { V10CredentialExchange, IndyProofReqAttrSpec, IndyProofReqPredSpec, IndyProofRequest, V10PresentationRequestRequest } from 'src/interface/api';
+import { v4 } from 'uuid';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[];
     public credState: {};
@@ -48,65 +49,32 @@ export class UITAgentService extends BaseAgentService {
         const response: V10CredentialExchange = await this.adminRequest(`/issue-credential/records/${credential_exchange_id}/issue`, { method: 'POST', data: data })
         return response
     }
-    private async proofRequest() {
-        //dynamic attrs
-        const reqAttrs = [
-            { "name": "name", "restrictions": [{ "issuer_did": this.did }] },
-            { "name": "date", "restrictions": [{ "issuer_did": this.did }] },
-            { "name": "degree", "restrictions": [{ "issuer_did": this.did }] }
-        ]
-        /**
-         * log_status("#20 Request proof of degree from alice")
-                req_attrs = [
-                    {"name": "name", "restrictions": [{"issuer_did": agent.did}]},
-                    {"name": "date", "restrictions": [{"issuer_did": agent.did}]},
-                ]
-                if revocation:
-                    req_attrs.append(
-                        {
-                            "name": "degree",
-                            "restrictions": [{"issuer_did": agent.did}],
-                            "non_revoked": {"to": int(time.time() - 1)},
-                        },
-                    )
-                else:
-                    req_attrs.append(
-                        {"name": "degree", "restrictions": [{"issuer_did": agent.did}]}
-                    )
-                if SELF_ATTESTED:
-                    # test self-attested claims
-                    req_attrs.append({"name": "self_attested_thing"},)
-                req_preds = [
-                    # test zero-knowledge proofs
-                    {
-                        "name": "age",
-                        "p_type": ">=",
-                        "p_value": 18,
-                        "restrictions": [{"issuer_did": agent.did}],
-                    }
-                ]
-                indy_proof_request = {
-                    "name": "Proof of Education",
-                    "version": "1.0",
-                    "requested_attributes": {
-                        f"0_{req_attr['name']}_uuid": req_attr for req_attr in req_attrs
-                    },
-                    "requested_predicates": {
-                        f"0_{req_pred['name']}_GE_uuid": req_pred
-                        for req_pred in req_preds
-                    },
-                }
-                if revocation:
-                    indy_proof_request["non_revoked"] = {"to": int(time.time())}
-                proof_request_web_request = {
-                    "connection_id": agent.connection_id,
-                    "proof_request": indy_proof_request,
-                    "trace": exchange_tracing,
-                }
-                await agent.admin_POST(
-                    "/present-proof/send-request", proof_request_web_request
-                )
-         */
+    public async buildAndSendProofRequest(connection_id: string, payload: SendProofRequestPayload) {
+        const reqAttrs: IndyProofReqAttrSpec[] = payload.requested_attributes
+        const reqPreds: IndyProofReqPredSpec[] = payload.requested_predicates
+        let requested_attributes = {}
+        let requested_predicates = {}
+        reqAttrs.forEach(attr => {
+            const key = `0_${attr.name}_uuid`;
+            requested_attributes[key] = attr;
+        });
+        reqPreds.length > 0 && reqPreds.forEach(predicate => {
+            const key = `0_${predicate.name}_GE_uuid`;
+            requested_predicates[key] = predicate;
+        });
+        const indy_proof_request: IndyProofRequest = {
+            "name": payload.proof_request_name,
+            "version": "1.0",
+            "nonce": v4(),
+            "requested_attributes": requested_attributes,
+            "requested_predicates": requested_predicates
+        }
+        const proofRequest: V10PresentationRequestRequest = {
+            "connection_id": connection_id,
+            "proof_request": indy_proof_request,
+        }
+        const response = await this.sendProofRequest(proofRequest);
+        return response;
     }
     /**
      * @param message payload of agent
