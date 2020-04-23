@@ -6,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
 import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams, IssueCredentialPayload, BasicMessagesPayload, PresentProofPayload, ConnectionsPayload } from '../interface/index';
-import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults } from '../interface/api';
+import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults, V10PresentationExchange, V10PresentationRequestRequest } from '../interface/api';
 import * as cors from 'cors';
 import * as socketIO from 'socket.io';
 import { createServer } from 'http';
@@ -380,7 +380,26 @@ export class BaseAgentService implements IBaseAgent {
         });
         return response;
     }
+    //#endregion
 
+    //#region Present Proof
+
+    public async sendProofRequest(proofRequest: V10PresentationRequestRequest) {
+        const response: V10PresentationExchange = await this.adminRequest(`/present-proof/send-request`, {
+            method: 'POST',
+            data: proofRequest
+        })
+        return response;
+    }
+    public async verifyPresentation(presentation_exchange_id: string) {
+        const response: V10PresentationExchange = await this.adminRequest(`/present-proof/records/${presentation_exchange_id}/verify-presentation`,
+            {
+                method: 'POST'
+            });
+        return response;
+    }
+
+    //#endregion
     //#region health check
     async fetchTiming() {
         const resp = await this.adminRequest('/timing', { method: 'GET' });

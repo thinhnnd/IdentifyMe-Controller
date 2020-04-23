@@ -2,7 +2,16 @@ import { Request, Response, Router } from 'express';
 import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
-import { SchemaSendRequest, V10CredentialOfferRequest, CredentialPreview, CredentialDefinitionGetResults, CredentialDefinitionsCreatedResults, SchemasCreatedResults, SchemaGetResults } from 'src/interface/api';
+import {
+    SchemaSendRequest,
+    V10CredentialOfferRequest,
+    CredentialPreview,
+    CredentialDefinitionGetResults,
+    CredentialDefinitionsCreatedResults,
+    SchemasCreatedResults,
+    SchemaGetResults
+}
+    from 'src/interface/api';
 export class UITController implements IBaseController {
     public path = '/';
     public router = Router();
