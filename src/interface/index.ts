@@ -63,4 +63,5 @@ export interface SendProofRequestPayload {
     requested_attributes: IndyProofReqAttrSpec[],
     requested_predicates: IndyProofReqPredSpec[],
     proof_request_name: string
+    comment: string
 }

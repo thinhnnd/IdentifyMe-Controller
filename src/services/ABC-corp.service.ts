@@ -65,7 +65,7 @@ export class ABCCorpAgentService extends BaseAgentService {
                 ...attr,
                 "non_revoked": {
                     "from_epoch": Date.now(),
-                    "to_epoch": Date.now() + 1000*60*60*24*7
+                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
                 }
             };
         });
@@ -75,7 +75,7 @@ export class ABCCorpAgentService extends BaseAgentService {
                 ...predicate,
                 "non_revoked": {
                     "from_epoch": Date.now(),
-                    "to_epoch": Date.now() + 1000*60*60*24*7
+                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
                 }
             };
         });
@@ -88,7 +88,8 @@ export class ABCCorpAgentService extends BaseAgentService {
         }
         const proofRequest: V10PresentationRequestRequest = {
             "connection_id": connection_id,
-            "proof_request": indy_proof_request
+            "proof_request": indy_proof_request,
+            "comment": payload.comment || "Comment for proof request"
         }
         console.log("ABCCorpAgentService -> buildAndSendProofRequest -> proofRequest", JSON.stringify(proofRequest))
         const response = await this.sendProofRequest(proofRequest);

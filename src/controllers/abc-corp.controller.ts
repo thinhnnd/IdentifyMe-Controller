@@ -218,6 +218,7 @@ export class ABCCorpController implements IBaseController {
             // const bodyExample = {
             //     "connection_id": "",
             //     "proof_request_name": "Proof Of Education",
+            //     "comment": "aaa"
             //     "request_attributes": {
             //         "schema_attrs": ["name", "date", "degree"],
             //         "restrictions": [{ "credential_definition_id": "WgWxqztrNooG92RXvxSTWv:3:CL:20:tag", "issuer_did": "WgWxqztrNooG92RXvxSTWv" }]
@@ -243,7 +244,6 @@ export class ABCCorpController implements IBaseController {
                 }
             })
             const reqAttrs: IndyProofReqAttrSpec[] = [
-                { "name": "self_attested_thing" },
                 ...attrs
             ]
             //zero knowledge proof
@@ -260,7 +260,8 @@ export class ABCCorpController implements IBaseController {
                 const payload: SendProofRequestPayload = {
                     requested_attributes: reqAttrs,
                     requested_predicates: reqPreds,
-                    proof_request_name: bodyExample.proof_request_name
+                    proof_request_name: bodyExample.proof_request_name,
+                    comment: bodyExample.comment
                 }
                 const resp = await this.agentService.buildAndSendProofRequest(bodyExample.connection_id, payload);
                 res.json(resp);
