@@ -77,7 +77,7 @@ export class UITAgentService extends BaseAgentService {
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
             "version": "1.0",
-            "nonce": Math.floor(Math.random() * 10000000000).toString(),
+            "nonce": (Math.random() * 1e20).toString() + Math.floor(Math.random() * 1e20).toString(),
             "requested_attributes": requested_attributes,
             "requested_predicates": requested_predicates
         }

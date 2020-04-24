@@ -63,27 +63,19 @@ export class ABCCorpAgentService extends BaseAgentService {
         reqAttrs.forEach(attr => {
             const key = `0_${attr.name}_uuid`;
             requested_attributes[key] = {
-                ...attr,
-                "non_revoked": {
-                    "from_epoch": Date.now(),
-                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
-                }
+                ...attr
             };
         });
         reqPreds.length > 0 && reqPreds.forEach(predicate => {
             const key = `0_${predicate.name}_GE_uuid`;
             requested_predicates[key] = {
-                ...predicate,
-                "non_revoked": {
-                    "from_epoch": Date.now(),
-                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
-                }
+                ...predicate
             };
         });
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
             "version": "1.0",
-            "nonce": Math.floor(Math.random() * 10000000000).toString(),
+            "nonce": (Math.random() * 1e20).toString() + Math.floor(Math.random() * 1e20).toString(),
             "requested_attributes": requested_attributes,
             "requested_predicates": requested_predicates
         }
@@ -188,15 +180,17 @@ export class ABCCorpAgentService extends BaseAgentService {
         console.log("ABCCorpService -> handle_present_proof -> payload", payload)
         switch (payload.state) {
             case "presentation_received":
-                // console.log(`Process the proof provided by X`);
-                // const proof = await this.verifyPresentation(payload.presentation_exchange_id);
-                console.log('verified :', payload.verified);
-                const isProofOfEducation = payload.presentation_request.name.includes("Education");
-                if (isProofOfEducation) {
-                    payload.presentation.identifiers.forEach(id_spec => {
-                        console.log(`schema_id: ${id_spec['schema_id']}`);
-                        console.log(`cred_def_id: ${id_spec['cred_def_id']}`);
-                    });
+                console.log(`Process the proof provided by X`);
+                const proof = await this.verifyPresentation(payload.presentation_exchange_id);
+                console.log('verified :', proof.verified);
+                if (proof.verified === "true") {
+                    const isProofOfEducation = proof.presentation_request["name"].includes("Education");
+                    console.log("presentation:", JSON.stringify(proof.presentation));
+                    if (isProofOfEducation) {
+                        payload.presentation.identifiers.forEach(id_spec => {
+                            console.log("id_spec:", JSON.stringify(id_spec));
+                        });
+                    }
                 }
                 break;
             case "presentation_sent":

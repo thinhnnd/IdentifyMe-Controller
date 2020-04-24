@@ -244,6 +244,7 @@ export class ABCCorpController implements IBaseController {
                 }
             })
             const reqAttrs: IndyProofReqAttrSpec[] = [
+                { "name": "self_attested_thing" },
                 ...attrs
             ]
             //zero knowledge proof
