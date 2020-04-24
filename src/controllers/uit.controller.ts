@@ -253,7 +253,8 @@ export class UITController implements IBaseController {
                 const payload: SendProofRequestPayload = {
                     requested_attributes: reqAttrs,
                     requested_predicates: reqPreds,
-                    proof_request_name: bodyExample.proof_request_name
+                    proof_request_name: bodyExample.proof_request_name,
+                    comment: bodyExample.comment
                 }
                 const resp = await this.agentService.buildAndSendProofRequest(bodyExample.connection_id, payload);
                 res.json(resp);
