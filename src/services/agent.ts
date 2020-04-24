@@ -338,7 +338,13 @@ export class BaseAgentService implements IBaseAgent {
         const webhookServer = createServer(app);
         const io = socketIO.listen(webhookServer, { origins: '*:*' })
         app.set('io', io);
-        const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
+        const path = [
+            '/webhooks/topic/connections', 
+            '/webhooks/topic/issue_credential', 
+            '/webhooks/topic/basicmessages', 
+            '/webhooks/topic/present_proof',
+            '/webhooks/topic/problem_report'
+        ]
         app.use(express.json());
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(cors());
