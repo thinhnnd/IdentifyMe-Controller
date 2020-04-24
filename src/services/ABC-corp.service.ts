@@ -88,7 +88,7 @@ export class ABCCorpAgentService extends BaseAgentService {
         }
         const proofRequest: V10PresentationRequestRequest = {
             "connection_id": connection_id,
-            "proof_request": indy_proof_request,
+            "proof_request": indy_proof_request
         }
         console.log("ABCCorpAgentService -> buildAndSendProofRequest -> proofRequest", JSON.stringify(proofRequest))
         const response = await this.sendProofRequest(proofRequest);

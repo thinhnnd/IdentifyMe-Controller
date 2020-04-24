@@ -5,7 +5,7 @@ import { getGenesisTxns } from '../utils';
 import { SEED, AGENT_MODULE, WEB_HOOK_URL } from '../constant';
 import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload, SendProofRequestPayload } from '../interface';
 import { generate } from 'randomstring';
-import { V10CredentialExchange, IndyProofReqAttrSpec, IndyProofReqPredSpec, IndyProofRequest, V10PresentationRequestRequest } from 'src/interface/api';
+import { V10CredentialExchange, IndyProofReqAttrSpec, IndyProofReqPredSpec, IndyProofRequest, V10PresentationRequestRequest, V10PresentationExchange, ConnectionRecord } from 'src/interface/api';
 import { v4 } from 'uuid';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[];
@@ -92,7 +92,7 @@ export class UITAgentService extends BaseAgentService {
      * @param message payload of agent
      * @description webhook handler for connections
      */
-    handle_connections = async (message: ConnectionsPayload) => {
+    handle_connections = async (message: ConnectionRecord) => {
         const state = message.state;
         if (message["connection_id"] === this.connectionId) {
             console.log("connection_id:", this.connectionId);
@@ -123,7 +123,7 @@ export class UITAgentService extends BaseAgentService {
         }
     }
 
-    handle_issue_credential = async (payload: IssueCredentialPayload) => {
+    handle_issue_credential = async (payload: V10CredentialExchange) => {
         // console.log("UITAgentService -> handle_issue_credential -> payload", payload)
         const state = payload["state"];
         const credential_exchange_id = payload["credential_exchange_id"]
@@ -148,8 +148,8 @@ export class UITAgentService extends BaseAgentService {
                 //B4: Issuer received credential request from Holder
                 console.log(`#4: ${this.agentName} received credential request from Holder`);
                 const data = {
-                    credential_preview: payload.credential_proposal_dict.credential_proposal,
-                    comment: payload.credential_proposal_dict.comment
+                    credential_preview: payload.credential_proposal_dict["credential_proposal"],
+                    comment: payload.credential_proposal_dict["comment"]
                 }
                 console.log("UITAgentService -> handle_issue_credential -> data", data);
                 const response = await this.issueCredential(credential_exchange_id, data);
@@ -176,7 +176,7 @@ export class UITAgentService extends BaseAgentService {
                 break;
         }
     }
-    handle_present_proof = async (payload: PresentProofPayload) => {
+    handle_present_proof = async (payload: V10PresentationExchange) => {
         console.log("UITAgentService -> handle_present_proof -> payload", payload)
         switch (payload.state) {
             case "presentation_received":

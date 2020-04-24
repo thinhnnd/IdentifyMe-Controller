@@ -354,7 +354,7 @@ export class BaseAgentService implements IBaseAgent {
         const stateNotified = ["active","response"];
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
-            let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
+            let payload: V10CredentialExchange | BasicMessagesPayload | V10PresentationExchange | ConnectionRecord;
             payload = req.body;
             const socketIo: socketIO.Server = req.app.get('io');
             //shared web hook handler

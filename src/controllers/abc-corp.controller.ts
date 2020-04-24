@@ -253,7 +253,7 @@ export class ABCCorpController implements IBaseController {
                     "name": bodyExample.requested_predicates.name,
                     "p_type": ">=",
                     "p_value": Number(bodyExample.requested_predicates.p_value),
-                    "restrictions": bodyExample.requested_predicates.restrictions,
+                    "restrictions": bodyExample.requested_predicates.restrictions
                 }];
             }
             try {
