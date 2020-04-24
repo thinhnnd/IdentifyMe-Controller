@@ -5,7 +5,7 @@ import { getGenesisTxns } from '../utils';
 import { SEED, AGENT_MODULE, WEB_HOOK_URL } from '../constant';
 import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload, SendProofRequestPayload } from '../interface';
 import { generate } from 'randomstring';
-import { V10CredentialExchange, IndyProofReqAttrSpec, IndyProofReqPredSpec, IndyProofRequest, V10PresentationRequestRequest, V10PresentationExchange, ConnectionRecord } from 'src/interface/api';
+import { V10CredentialExchange, IndyProofReqAttrSpec, IndyProofReqPredSpec, IndyProofRequest, V10PresentationRequestRequest, V10PresentationExchange, ConnectionRecord, V10CredentialProblemReportRequest } from 'src/interface/api';
 import { v4 } from 'uuid';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[];
@@ -77,7 +77,7 @@ export class UITAgentService extends BaseAgentService {
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
             "version": "1.0",
-            "nonce": v4(),
+            "nonce": Math.floor(Math.random() * 10000000000).toString(),
             "requested_attributes": requested_attributes,
             "requested_predicates": requested_predicates
         }
@@ -208,5 +208,8 @@ export class UITAgentService extends BaseAgentService {
     handle_basicmessages = async (payload: BasicMessagesPayload) => {
         console.log("UITAgentService -> handle_basicmessages -> payload", payload)
         //TODO
+    }
+    handle_problem_report = async (payload: V10CredentialProblemReportRequest) => {
+        console.log("UITAgentService -> handle_problem_report -> payload", payload)
     }
 }

@@ -9,7 +9,8 @@ import {
     V10PresentationRequestRequest,
     IndyProofRequest,
     IndyProofReqPredSpec,
-    IndyProofReqAttrSpec
+    IndyProofReqAttrSpec,
+    V10CredentialProblemReportRequest
 }
     from 'src/interface/api';
 import { generate } from 'randomstring';
@@ -82,7 +83,7 @@ export class ABCCorpAgentService extends BaseAgentService {
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
             "version": "1.0",
-            "nonce": v4(),
+            "nonce": Math.floor(Math.random() * 10000000000).toString(),
             "requested_attributes": requested_attributes,
             "requested_predicates": requested_predicates
         }
@@ -222,5 +223,8 @@ export class ABCCorpAgentService extends BaseAgentService {
     handle_basicmessages = async (payload: BasicMessagesPayload) => {
         console.log("ABCCorpService -> handle_basicmessages -> payload", payload)
         //TODO
+    }
+    handle_problem_report = async (payload: V10CredentialProblemReportRequest) => {
+        console.log("UITAgentService -> handle_problem_report -> payload", payload)
     }
 }
