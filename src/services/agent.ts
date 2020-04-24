@@ -370,7 +370,7 @@ export class BaseAgentService implements IBaseAgent {
             }
             try {
                 await this.processHandler(topic, payload);
-                return res.status(200);
+                return res.sendStatus(200);
             } catch (error) {
                 console.log(error);
             }
