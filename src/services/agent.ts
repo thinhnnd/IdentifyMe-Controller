@@ -350,6 +350,8 @@ export class BaseAgentService implements IBaseAgent {
         app.get("/", (req, res) => {
             res.send("Webhook is running");
         });
+        const connNotifiedArray = [];
+        const stateNotified = ["active","response"];
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
             let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
@@ -357,17 +359,13 @@ export class BaseAgentService implements IBaseAgent {
             const socketIo: socketIO.Server = req.app.get('io');
             //shared web hook handler
             if (topic === "connections") {
-                switch (payload.state) {
-                    case "response":
-                        console.log("SSI Client response invitation, notify for UI client with id " + payload.connection_id);
-                        socketIo.sockets.emit(payload.connection_id, payload);
-                        break;
-                    case "active":
-                        console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
-                        socketIo.sockets.emit(payload.connection_id, payload);
-                        break;
-                    default:
-                        break;
+                if(stateNotified.includes(payload.state) && !connNotifiedArray.includes(this.connectionId)) {
+                    console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
+                    socketIo.sockets.emit(payload.connection_id, payload);
+                    connNotifiedArray.push(payload.connection_id);
+                }
+                if(payload.state === "inactive") {
+                    //TODO remove in connNotifiedArray if connection is inactive
                 }
             }
             try {

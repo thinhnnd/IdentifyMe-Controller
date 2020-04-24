@@ -56,11 +56,23 @@ export class UITAgentService extends BaseAgentService {
         let requested_predicates = {}
         reqAttrs.forEach(attr => {
             const key = `0_${attr.name}_uuid`;
-            requested_attributes[key] = attr;
+            requested_attributes[key] = {
+                ...attr,
+                "non_revoked": {
+                    "from_epoch": Date.now(),
+                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
+                }
+            };
         });
         reqPreds.length > 0 && reqPreds.forEach(predicate => {
             const key = `0_${predicate.name}_GE_uuid`;
-            requested_predicates[key] = predicate;
+            requested_predicates[key] = {
+                ...predicate,
+                "non_revoked": {
+                    "from_epoch": Date.now(),
+                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
+                }
+            };
         });
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
@@ -92,8 +104,8 @@ export class UITAgentService extends BaseAgentService {
                     console.log("request created");
                     break;
                 case "response":
-                    const resp = await this.sendTrustPing(this.connectionId, { comment: "Ping connection" });
-                    console.log("response received", resp);
+                    // const resp = await this.sendTrustPing(this.connectionId, { comment: "Ping connection" });
+                    console.log("response received");
                     break;
                 case "active":
                     console.log("connection active");
