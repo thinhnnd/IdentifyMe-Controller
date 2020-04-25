@@ -81,7 +81,6 @@ export class ABCCorpController implements IBaseController {
                     cred_def_id: req.body.cred_def_id,
                     comment: req.body.comment,
                     auto_remove: req.body.auto_remove,
-                    revoc_reg_id: req.body.revoc_reg_id,
                 }
                 const result = await this.agentService.issuerSendOffer(offer);
                 console.log(result);
@@ -223,36 +222,33 @@ export class ABCCorpController implements IBaseController {
             //         "schema_attrs": ["name", "date", "degree"],
             //         "restrictions": [{ "credential_definition_id": "WgWxqztrNooG92RXvxSTWv:3:CL:20:tag", "issuer_did": "WgWxqztrNooG92RXvxSTWv" }]
             //     },
-            //     "requested_predicates": {
-            //         "name": "age",
-            //         "p_value": "18",
-            //         "restrictions": [{
-            //             "issuer_did": "",
-            //             "credential_definition_id": "",
-            //             "cred_def_id": "",
-            //             "schema_id": "",
-            //             "schema_issuer_did": "",
-            //             "schema_name": "",
-            //             "schema_version": "",
-            //         }]
-            //     }
+            // "requested_predicates": {
+            //     "name": "age",
+            //     "p_value": "18",
+            //     "p_type":  "<" | "<=" | ">=" | ">"
+            //     "restrictions": [{
+            //         "issuer_did": "",
+            //         "credential_definition_id": "",
+            //         "cred_def_id": "",
+            //         "schema_id": "",
+            //         "schema_issuer_did": "",
+            //         "schema_name": "",
+            //         "schema_version": "",
+            //     }]
             // }
-            const attrs = bodyExample.request_attributes.schema_attrs.map(attr => {
+            // }
+            const reqAttrs: IndyProofReqAttrSpec[] = bodyExample.request_attributes.schema_attrs.map((attr: string) => {
                 return {
                     name: attr,
                     restrictions: bodyExample.request_attributes.restrictions
                 }
             })
-            const reqAttrs: IndyProofReqAttrSpec[] = [
-                { "name": "self_attested_thing" },
-                ...attrs
-            ]
             //zero knowledge proof
             let reqPreds: IndyProofReqPredSpec[] = [];
             if (bodyExample.requested_predicates) {
                 reqPreds = [{
                     "name": bodyExample.requested_predicates.name,
-                    "p_type": ">=",
+                    "p_type": bodyExample.requested_predicates.p_type,
                     "p_value": Number(bodyExample.requested_predicates.p_value),
                     "restrictions": bodyExample.requested_predicates.restrictions
                 }];

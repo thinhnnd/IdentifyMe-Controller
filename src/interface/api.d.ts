@@ -1,9 +1,9 @@
 export interface AMLRecord {
-    amlContext?: string;
     version?: string;
     aml?: {
         [name: string]: string;
     };
+    amlContext?: string;
 }
 export interface AdminModules {
     /**
@@ -19,17 +19,27 @@ export interface ConnectionInvitation {
      */
     recipientKeys?: string /* ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$ */ [];
     /**
-     * DID for connection invitation
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
+     * List of routing keys
      */
-    did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
+    routingKeys?: string /* ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$ */ [];
+    /**
+     * Optional label for connection
+     * example:
+     * Bob
+     */
+    label?: string;
     /**
      * Optional image URL for connection invitation
      * example:
      * http://192.168.56.101/img/logo.jpg
      */
     imageUrl?: string; // url
+    /**
+     * DID for connection invitation
+     * example:
+     * WgWxqztrNooG92RXvxSTWv
+     */
+    did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
     /**
      * Message identifier
      * example:
@@ -42,16 +52,6 @@ export interface ConnectionInvitation {
      * http://192.168.56.101:8020
      */
     serviceEndpoint?: string;
-    /**
-     * List of routing keys
-     */
-    routingKeys?: string /* ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$ */ [];
-    /**
-     * Optional label for connection
-     * example:
-     * Bob
-     */
-    label?: string;
     /**
      * Message type
      * example:
@@ -67,11 +67,41 @@ export interface ConnectionList {
 }
 export interface ConnectionRecord {
     /**
-     * Invitation mode: once, multi, or static
+     * Inbound routing connection id to use
      * example:
-     * once
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
-    invitation_mode?: "once" | "multi" | "static";
+    inbound_connection_id?: string;
+    /**
+     * Their label for connection
+     * example:
+     * Bob
+     */
+    their_label?: string;
+    /**
+     * Our DID for connection
+     * example:
+     * WgWxqztrNooG92RXvxSTWv
+     */
+    my_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
+    /**
+     * Current record state
+     * example:
+     * active
+     */
+    state?: string;
+    /**
+     * Their DID for connection
+     * example:
+     * WgWxqztrNooG92RXvxSTWv
+     */
+    their_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
+    /**
+     * Public key for connection
+     * example:
+     * H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV
+     */
+    invitation_key?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$
     /**
      * Connection initiator: self, external, or multiuse
      * example:
@@ -79,17 +109,53 @@ export interface ConnectionRecord {
      */
     initiator?: "self" | "external" | "multiuse";
     /**
+     * Connection acceptance: manual or auto
+     * example:
+     * auto
+     */
+    accept?: "manual" | "auto";
+    /**
      * Connection identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     connection_id?: string;
     /**
-     * Inbound routing connection id to use
+     * Error message
+     * example:
+     * No DIDDoc provided; cannot connect to public DID
+     */
+    error_msg?: string;
+    /**
+     * Their assigned role for connection
+     * example:
+     * Point of contact
+     */
+    their_role?: string;
+    /**
+     * Invitation mode: once, multi, or static
+     * example:
+     * once
+     */
+    invitation_mode?: "once" | "multi" | "static";
+    /**
+     * Time of last record update
+     * example:
+     * 2020-04-23 08:50:50Z
+     */
+    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
+    /**
+     * Connection request identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
-    inbound_connection_id?: string;
+    request_id?: string;
+    /**
+     * Routing state of connection
+     * example:
+     * active
+     */
+    routing_state?: string;
     /**
      * Optional alias to apply to connection for later use
      * example:
@@ -99,105 +165,11 @@ export interface ConnectionRecord {
     /**
      * Time of record creation
      * example:
-     * 2020-03-16 01:28:09Z
+     * 2020-04-23 08:50:50Z
      */
     created_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-    /**
-     * Their DID for connection
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
-     */
-    their_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
-    /**
-     * Current record state
-     * example:
-     * active
-     */
-    state?: string;
-    /**
-     * Routing state of connection
-     * example:
-     * active
-     */
-    routing_state?: string;
-    /**
-     * Their assigned role for connection
-     * example:
-     * Point of contact
-     */
-    their_role?: string;
-    /**
-     * Public key for connection
-     * example:
-     * H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV
-     */
-    invitation_key?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$
-    /**
-     * Connection request identifier
-     * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
-     */
-    request_id?: string;
-    /**
-     * Their label for connection
-     * example:
-     * Bob
-     */
-    their_label?: string;
-    /**
-     * Error message
-     * example:
-     * No DIDDoc provided; cannot connect to public DID
-     */
-    error_msg?: string;
-    /**
-     * Our DID for connection
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
-     */
-    my_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
-    /**
-     * Connection acceptance: manual or auto
-     * example:
-     * auto
-     */
-    accept?: "manual" | "auto";
-    /**
-     * Time of last record update
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
 }
 export interface ConnectionStaticRequest {
-    /**
-     * Remote verification key
-     */
-    their_verkey?: string;
-    /**
-     * Alias to assign to this connection
-     */
-    alias?: string;
-    /**
-     * Remote DID
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
-     */
-    their_did?: string;
-    /**
-     * URL endpoint for the other party
-     * example:
-     * http://192.168.56.101:5000
-     */
-    their_endpoint?: string;
-    /**
-     * Role to assign to this connection
-     */
-    their_role?: string;
-    /**
-     * Seed to use for the local DID
-     */
-    my_seed?: string;
     /**
      * Label to assign to this connection
      */
@@ -209,11 +181,45 @@ export interface ConnectionStaticRequest {
      */
     my_did?: string;
     /**
+     * Remote verification key
+     */
+    their_verkey?: string;
+    /**
+     * Remote DID
+     * example:
+     * WgWxqztrNooG92RXvxSTWv
+     */
+    their_did?: string;
+    /**
+     * Role to assign to this connection
+     */
+    their_role?: string;
+    /**
+     * Alias to assign to this connection
+     */
+    alias?: string;
+    /**
      * Seed to use for the remote DID
      */
     their_seed?: string;
+    /**
+     * Seed to use for the local DID
+     */
+    my_seed?: string;
+    /**
+     * URL endpoint for the other party
+     * example:
+     * http://192.168.56.101:5000
+     */
+    their_endpoint?: string;
 }
 export interface ConnectionStaticResult {
+    /**
+     * Local DID
+     * example:
+     * WgWxqztrNooG92RXvxSTWv
+     */
+    my_did: string;
     /**
      * Remote verification key
      */
@@ -224,21 +230,15 @@ export interface ConnectionStaticResult {
      * WgWxqztrNooG92RXvxSTWv
      */
     their_did: string;
+    record: ConnectionRecord;
     /**
      * My verification key
      */
     mv_verkey: string;
     /**
-     * Local DID
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
-     */
-    my_did: string;
-    /**
      * My endpoint
      */
     my_endpoint: string;
-    record: ConnectionRecord;
 }
 export interface CredAttrSpec {
     /**
@@ -261,29 +261,10 @@ export interface CredAttrSpec {
     value: string;
 }
 export interface Credential {
-    rev_reg?: RevReg;
-    /**
-     * Schema identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
-     */
-    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
-    /**
-     * Revocation registry identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0
-     */
-    rev_reg_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):4:([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+))(:.+)?:CL_ACCUM:(.+$)
     /**
      * Signature correctness proof
      */
     signature_correctness_proof?: {
-    };
-    /**
-     * Attribute names mapped to their raw and encoded values
-     */
-    values?: {
-        [name: string]: RawEncCredAttr;
     };
     witness?: Witness;
     /**
@@ -292,6 +273,25 @@ export interface Credential {
      * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
      */
     cred_def_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
+    rev_reg?: RevReg;
+    /**
+     * Schema identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
+     */
+    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
+    /**
+     * Attribute names mapped to their raw and encoded values
+     */
+    values?: {
+        [name: string]: RawEncCredAttr;
+    };
+    /**
+     * Revocation registry identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0
+     */
+    rev_reg_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):4:([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+))(:.+)?:CL_ACCUM:(.+$)
     /**
      * Digital signature
      */
@@ -300,28 +300,10 @@ export interface Credential {
 }
 export interface CredentialDefinition {
     /**
-     * Schema identifier within credential definition identifier
-     * example:
-     * 20
-     */
-    schemaId?: string;
-    /**
      * Credential definition primary and revocation values
      */
     value?: {
     };
-    /**
-     * Signature type: CL for Camenisch-Lysyanskaya
-     * example:
-     * CL
-     */
-    type?: string;
-    /**
-     * Credential definition identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
-     */
-    id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
     /**
      * Node protocol version
      * example:
@@ -329,26 +311,44 @@ export interface CredentialDefinition {
      */
     ver?: string; // ^[0-9.]+$
     /**
+     * Signature type: CL for Camenisch-Lysyanskaya
+     * example:
+     * CL
+     */
+    type?: string;
+    /**
      * Tag within credential definition identifier
      * example:
      * tag
      */
     tag?: string;
+    /**
+     * Credential definition identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
+     */
+    id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
+    /**
+     * Schema identifier within credential definition identifier
+     * example:
+     * 20
+     */
+    schemaId?: string;
 }
 export interface CredentialDefinitionGetResults {
     credential_definition?: CredentialDefinition;
 }
 export interface CredentialDefinitionSendRequest {
     /**
+     * Revocation supported flag
+     */
+    support_revocation?: boolean;
+    /**
      * Schema identifier
      * example:
      * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
      */
     schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
-    /**
-     * Revocation supported flag
-     */
-    support_revocation?: boolean;
     /**
      * Credential definition identifier tag
      * example:
@@ -367,62 +367,8 @@ export interface CredentialDefinitionSendResults {
 export interface CredentialDefinitionsCreatedResults {
     credential_definition_ids?: string /* ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$ */ [];
 }
-export interface CredentialExchange {
-    credential_definition_id?: string;
-    initiator?: string;
-    connection_id?: string;
-    schema_id?: string;
-    credential_offer?: {
-    };
-    /**
-     * Time of record creation
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    created_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-    credential_id?: string;
-    error_msg?: string;
-    credential?: {
-    };
-    state?: string;
-    credential_exchange_id?: string;
-    parent_thread_id?: string;
-    credential_request_metadata?: {
-    };
-    raw_credential?: {
-    };
-    auto_issue?: boolean;
-    credential_request?: {
-    };
-    credential_values?: {
-    };
-    thread_id?: string;
-    /**
-     * Time of last record update
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-}
-export interface CredentialExchangeList {
-    results?: CredentialExchange[];
-}
-export interface CredentialIssueRequest {
-    credential_values: {
-    };
-}
-export interface CredentialIssueResult {
-    credential_id?: string;
-}
 export interface CredentialList {
     results?: Credential[];
-}
-export interface CredentialOfferRequest {
-    credential_definition_id: string;
-    connection_id: string;
-}
-export interface CredentialOfferResult {
-    credential_id?: string;
 }
 export interface CredentialPreview {
     /**
@@ -430,28 +376,16 @@ export interface CredentialPreview {
      * example:
      * did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/issue-credential/1.0/credential-preview
      */
-    "@type"?: "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/issue-credential/1.0/credential-preview";
+    "@type"?: string;
     attributes: CredAttrSpec[];
 }
-export interface CredentialProblemReportRequest {
-    explain_ltxt: string;
-}
-export interface CredentialRequestResult {
-    credential_id?: string;
-}
-export interface CredentialSendRequest {
-    credential_definition_id: string;
-    credential_values?: {
-    };
-    connection_id: string;
-}
-export interface CredentialSendResult {
-    credential_id?: string;
-}
-export interface CredentialStoreRequest {
-    credential_id?: string;
-}
 export interface DID {
+    /**
+     * DID of interest
+     * example:
+     * WgWxqztrNooG92RXvxSTWv
+     */
+    did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
     /**
      * Public verification key
      * example:
@@ -464,12 +398,6 @@ export interface DID {
      * false
      */
     public?: boolean;
-    /**
-     * DID of interest
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
-     */
-    did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
 }
 export interface DIDList {
     /**
@@ -487,7 +415,6 @@ export interface GetTagPolicyResult {
     taggables?: string[];
 }
 export interface IndyProofReqAttrSpec {
-    non_revoked?: IndyProofReqNonRevoked;
     /**
      * Attribute name
      * example:
@@ -498,28 +425,27 @@ export interface IndyProofReqAttrSpec {
      * If present, credential must satisfy one of given restrictions
      */
     restrictions?: IndyProofReqSpecRestrictions[];
+    non_revoked?: IndyProofReqNonRevoked;
 }
 export interface IndyProofReqNonRevoked {
     /**
      * Earliest epoch of interest for non-revocation proof
      * example:
-     * 1584322089
+     * 1587631850
      */
     from_epoch: number; // int32
     /**
      * Latest epoch of interest for non-revocation proof
      * example:
-     * 1584322089
+     * 1587631850
      */
     to_epoch: number; // int32
 }
 export interface IndyProofReqPredSpec {
     /**
-     * Predicate type (indy currently supports only '>=')
-     * example:
-     * >=
+     * Threshold value
      */
-    p_type: "<" | "<=" | ">=" | ">";
+    p_value: number; // int32
     /**
      * Attribute name
      * example:
@@ -527,40 +453,18 @@ export interface IndyProofReqPredSpec {
      */
     name: string;
     /**
-     * Threshold value
-     */
-    p_value: number; // int32
-    non_revoked?: IndyProofReqNonRevoked;
-    /**
      * If present, credential must satisfy one of given restrictions
      */
     restrictions?: IndyProofReqSpecRestrictions[];
+    non_revoked?: IndyProofReqNonRevoked;
+    /**
+     * Predicate type ('<', '<=', '>=', or '>')
+     * example:
+     * >=
+     */
+    p_type: "<" | "<=" | ">=" | ">";
 }
 export interface IndyProofReqSpecRestrictions {
-    /**
-     * Credential definition identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
-     */
-    credential_definition_id: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
-    /**
-     * Schema identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
-     */
-    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
-    /**
-     * Schema name
-     * example:
-     * transcript
-     */
-    schema_name?: string;
-    /**
-     * Schema version
-     * example:
-     * 1.0
-     */
-    schema_version?: string; // ^[0-9.]+$
     /**
      * Schema issuer (origin) DID
      * example:
@@ -579,26 +483,32 @@ export interface IndyProofReqSpecRestrictions {
      * WgWxqztrNooG92RXvxSTWv
      */
     issuer_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
-}
-export interface IndyProofRequest {
     /**
-     * Requested attribute specifications of proof request
+     * Schema identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
      */
-    requested_attributes: {
-        [name: string]: IndyProofReqAttrSpec;
-    };
+    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
     /**
-     * Requested predicate specifications of proof request
+     * Credential definition identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
      */
-    requested_predicates: {
-        [name: string]: IndyProofReqPredSpec;
-    };
+    credential_definition_id: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
     /**
-     * Proof request version
+     * Schema version
      * example:
      * 1.0
      */
-    version?: string; // ^[0-9.]+$
+    schema_version?: string; // ^[0-9.]+$
+    /**
+     * Schema name
+     * example:
+     * transcript
+     */
+    schema_name?: string;
+}
+export interface IndyProofRequest {
     /**
      * Proof request name
      * example:
@@ -611,18 +521,36 @@ export interface IndyProofRequest {
      * 1234567890
      */
     nonce?: string;
+    /**
+     * Proof request version
+     * example:
+     * 1.0
+     */
+    version?: string; // ^[0-9.]+$
+    /**
+     * Requested predicate specifications of proof request
+     */
+    requested_predicates: {
+        [name: string]: IndyProofReqPredSpec;
+    };
+    /**
+     * Requested attribute specifications of proof request
+     */
+    requested_attributes: {
+        [name: string]: IndyProofReqAttrSpec;
+    };
 }
 export interface IndyRequestedCredsRequestedAttr {
-    /**
-     * Whether to reveal attribute in proof
-     */
-    revealed?: boolean;
     /**
      * Wallet credential identifier (typically but not necessarily a UUID)
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     cred_id?: string;
+    /**
+     * Whether to reveal attribute in proof
+     */
+    revealed?: boolean;
 }
 export interface IndyRequestedCredsRequestedPred {
     /**
@@ -639,13 +567,13 @@ export interface InvitationResult {
      * http://192.168.56.101:8020/invite?c_i=eyJAdHlwZSI6Li4ufQ==
      */
     invitation_url?: string;
-    invitation?: ConnectionInvitation;
     /**
      * Connection identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     connection_id?: string;
+    invitation?: ConnectionInvitation;
 }
 export interface MenuForm {
     /**
@@ -717,17 +645,17 @@ export interface MenuJson {
      */
     options: MenuOption[];
     /**
-     * Introductory text for the menu
-     * example:
-     * User preferences for window settings
-     */
-    description?: string;
-    /**
      * Optional error message to display in menu header
      * example:
      * Error: item not present
      */
     errormsg?: string;
+    /**
+     * Introductory text for the menu
+     * example:
+     * User preferences for window settings
+     */
+    description?: string;
     /**
      * Menu title
      * example:
@@ -764,17 +692,17 @@ export interface MenuOption {
 }
 export interface PerformRequest {
     /**
-     * Input parameter values
-     */
-    params?: {
-        [name: string]: string;
-    };
-    /**
      * Menu option name
      * example:
      * Query
      */
     name?: string;
+    /**
+     * Input parameter values
+     */
+    params?: {
+        [name: string]: string;
+    };
 }
 export interface PingRequest {
     /**
@@ -833,7 +761,7 @@ export interface PresPredSpec {
      */
     cred_def_id: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
     /**
-     * Predicate (currently, indy supports >=)
+     * Predicate type ('<', '<=', '>=', or '>')
      * example:
      * >=
      */
@@ -843,50 +771,15 @@ export interface PresPredSpec {
      */
     threshold: number; // int32
 }
-export interface PresentationExchange {
-    initiator?: string;
-    connection_id?: string;
-    /**
-     * Time of record creation
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    created_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-    presentation_exchange_id?: string;
-    state?: string;
-    presentation_request?: {
-    };
-    verified?: string;
-    error_msg?: string;
-    presentation?: {
-    };
-    thread_id?: string;
-    /**
-     * Time of last record update
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-}
-export interface PresentationExchangeList {
-    results?: PresentationExchange[];
-}
 export interface PresentationPreview {
     /**
      * Message type identifier
      * example:
      * did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/presentation-preview
      */
-    "@type"?: "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/presentation-preview";
+    "@type"?: string;
     attributes: PresAttrSpec[];
     predicates: PresPredSpec[];
-}
-export interface PresentationRequestRequest {
-    requested_attributes?: RequestedAttribute[];
-    requested_predicates?: RequestedPredicate[];
-    version: string;
-    name: string;
-    connection_id: string;
 }
 export interface QueryResult {
     /**
@@ -899,29 +792,17 @@ export interface QueryResult {
 }
 export interface RawEncCredAttr {
     /**
-     * (Numeric string) encoded value
-     * example:
-     * 412821674062189604125602903860586582569826459817431467861859655321
-     */
-    encoded?: string;
-    /**
      * Raw value
      * example:
      * Alex
      */
     raw?: string;
-}
-export interface RequestedAttribute {
-    name: string;
-    restrictions?: {
-    }[];
-}
-export interface RequestedPredicate {
-    p_type: string;
-    name: string;
-    p_value: string;
-    restrictions?: {
-    }[];
+    /**
+     * (Numeric string) encoded value
+     * example:
+     * 412821674062189604125602903860586582569826459817431467861859655321
+     */
+    encoded?: string;
 }
 export interface RevReg {
     /**
@@ -933,6 +814,10 @@ export interface RevReg {
 }
 export interface RevRegCreateRequest {
     /**
+     * Create registry with all indexes issued
+     */
+    issuance_by_default?: boolean;
+    /**
      * Credential definition identifier
      * example:
      * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
@@ -940,6 +825,8 @@ export interface RevRegCreateRequest {
     credential_definition_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
     /**
      * Maximum credential numbers
+     * example:
+     * 100
      */
     max_cred_num?: number; // int32
 }
@@ -948,22 +835,21 @@ export interface RevRegCreateResult {
 export interface RevRegUpdateTailsFileUri {
     /**
      * Public URI to the tails file
+     * example:
+     * http://192.168.56.133:5000/revocation/registry/WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0/tails-file
      */
     tails_public_uri: string; // url
 }
+export interface RevRegsCreated {
+    rev_reg_ids?: string /* ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):4:([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+))(:.+)?:CL_ACCUM:(.+$) */ [];
+}
 export interface Schema {
     /**
-     * Schema version
+     * Node protocol version
      * example:
      * 1.0
      */
-    version?: string; // ^[0-9.]+$
-    /**
-     * Schema sequence number
-     * example:
-     * 999
-     */
-    seqNo?: number; // int32
+    ver?: string; // ^[0-9.]+$
     /**
      * Schema name
      * example:
@@ -977,15 +863,21 @@ export interface Schema {
      */
     id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
     /**
-     * Node protocol version
+     * Schema version
      * example:
      * 1.0
      */
-    ver?: string; // ^[0-9.]+$
+    version?: string; // ^[0-9.]+$
     /**
      * Schema attribute names
      */
     attrNames?: string[];
+    /**
+     * Schema sequence number
+     * example:
+     * 999
+     */
+    seqNo?: number; // int32
 }
 export interface SchemaGetResults {
     schema?: Schema;
@@ -996,17 +888,17 @@ export interface SchemaSendRequest {
      */
     attributes: string[];
     /**
-     * Schema version
-     * example:
-     * 1.0
-     */
-    schema_version: string; // ^[0-9.]+$
-    /**
      * Schema name
      * example:
      * prefs
      */
     schema_name: string;
+    /**
+     * Schema version
+     * example:
+     * 1.0
+     */
+    schema_version: string; // ^[0-9.]+$
 }
 export interface SchemaSendResults {
     /**
@@ -1034,17 +926,17 @@ export interface SendMenu {
          */
         options: MenuOption[];
         /**
-         * Introductory text for the menu
-         * example:
-         * User preferences for window settings
-         */
-        description?: string;
-        /**
          * Optional error message to display in menu header
          * example:
          * Error: item not present
          */
         errormsg?: string;
+        /**
+         * Introductory text for the menu
+         * example:
+         * User preferences for window settings
+         */
+        description?: string;
         /**
          * Menu title
          * example:
@@ -1061,14 +953,6 @@ export interface SendMessage {
      */
     content?: string;
 }
-export interface SendPresentationRequest {
-    requested_attributes: {
-    };
-    requested_predicates: {
-    };
-    self_attested_attributes: {
-    };
-}
 export interface SetTagPolicyRequest {
     /**
      * List of attributes to set taggable for credential search
@@ -1081,18 +965,18 @@ export interface TAAAccept {
     text?: string;
 }
 export interface TAAAcceptance {
-    time?: number; // int32
     mechanism?: string;
+    time?: number; // int32
 }
 export interface TAAInfo {
-    taa_record?: TAARecord;
-    taa_required?: boolean;
     taa_accepted?: TAAAcceptance;
+    taa_required?: boolean;
     aml_record?: AMLRecord;
+    taa_record?: TAARecord;
 }
 export interface TAARecord {
-    digest?: string;
     version?: string;
+    digest?: string;
     text?: string;
 }
 export interface TAAResult {
@@ -1102,40 +986,9 @@ export interface V10AttributeMimeTypesResult {
 }
 export interface V10CredentialExchange {
     /**
-     * Revocation registry identifier
+     * (Indy) credential request
      */
-    revoc_reg_id?: string;
-    /**
-     * Issue-credential exchange initiator: self or external
-     * example:
-     * self
-     */
-    initiator?: "self" | "external";
-    /**
-     * Schema identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
-     */
-    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
-    /**
-     * Time of record creation
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    created_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-    /**
-     * Credential identifier within revocation registry
-     */
-    revocation_id?: string;
-    /**
-     * (Indy) credential request metadata
-     */
-    credential_request_metadata?: {
-    };
-    /**
-     * Serialized credential proposal message
-     */
-    credential_proposal_dict?: {
+    credential_request?: {
     };
     /**
      * Holder choice to accept offer in this credential exchange
@@ -1144,28 +997,11 @@ export interface V10CredentialExchange {
      */
     auto_offer?: boolean;
     /**
-     * Connection identifier
+     * Issue-credential exchange initiator: self or external
      * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     * self
      */
-    connection_id?: string;
-    /**
-     * Parent thread identifier
-     * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
-     */
-    parent_thread_id?: string;
-    /**
-     * Credential as received, prior to storage in holder wallet
-     */
-    raw_credential?: {
-    };
-    /**
-     * Issuer choice to remove this credential exchange record when complete
-     * example:
-     * false
-     */
-    auto_remove?: boolean;
+    initiator?: "self" | "external";
     /**
      * Issuer choice to issue to request in this credential exchange
      * example:
@@ -1173,40 +1009,11 @@ export interface V10CredentialExchange {
      */
     auto_issue?: boolean;
     /**
-     * Error message
-     * example:
-     * credential definition identifier is not set in proposal
-     */
-    error_msg?: string;
-    /**
-     * Credential as stored
-     */
-    credential?: {
-    };
-    /**
-     * Time of last record update
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-    /**
      * Credential identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     credential_id?: string;
-    /**
-     * Issue-credential exchange role: holder or issuer
-     * example:
-     * issuer
-     */
-    role?: "holder" | "issuer";
-    /**
-     * Issue-credential exchange state
-     * example:
-     * credential_acked
-     */
-    state?: string;
     /**
      * Credential exchange identifier
      * example:
@@ -1214,27 +1021,108 @@ export interface V10CredentialExchange {
      */
     credential_exchange_id?: string;
     /**
+     * Issue-credential exchange role: holder or issuer
+     * example:
+     * issuer
+     */
+    role?: "holder" | "issuer";
+    /**
+     * Credential as received, prior to storage in holder wallet
+     */
+    raw_credential?: {
+    };
+    /**
+     * Record trace information, based on agent configuration
+     */
+    trace?: boolean;
+    /**
+     * Serialized credential proposal message
+     */
+    credential_proposal_dict?: {
+    };
+    /**
      * Credential definition identifier
      * example:
      * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
      */
     credential_definition_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
     /**
+     * (Indy) credential request metadata
+     */
+    credential_request_metadata?: {
+    };
+    /**
+     * Error message
+     * example:
+     * credential definition identifier is not set in proposal
+     */
+    error_msg?: string;
+    /**
+     * Issuer choice to remove this credential exchange record when complete
+     * example:
+     * false
+     */
+    auto_remove?: boolean;
+    /**
+     * Revocation registry identifier
+     */
+    revoc_reg_id?: string;
+    /**
+     * Credential identifier within revocation registry
+     */
+    revocation_id?: string;
+    /**
+     * Time of record creation
+     * example:
+     * 2020-04-23 08:50:50Z
+     */
+    created_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
+    /**
      * (Indy) credential offer
      */
     credential_offer?: {
     };
     /**
-     * (Indy) credential request
+     * Issue-credential exchange state
+     * example:
+     * credential_acked
      */
-    credential_request?: {
-    };
+    state?: string;
+    /**
+     * Schema identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
+     */
+    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
+    /**
+     * Connection identifier
+     * example:
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     */
+    connection_id?: string;
     /**
      * Thread identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     thread_id?: string;
+    /**
+     * Parent thread identifier
+     * example:
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     */
+    parent_thread_id?: string;
+    /**
+     * Time of last record update
+     * example:
+     * 2020-04-23 08:50:50Z
+     */
+    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
+    /**
+     * Credential as stored
+     */
+    credential?: {
+    };
 }
 export interface V10CredentialExchangeListResult {
     /**
@@ -1243,74 +1131,53 @@ export interface V10CredentialExchangeListResult {
     results?: V10CredentialExchange[];
 }
 export interface V10CredentialIssueRequest {
-    credential_preview: CredentialPreview;
     /**
      * Human-readable comment
      */
     comment?: string;
+    credential_preview: CredentialPreview;
 }
 export interface V10CredentialOfferRequest {
-    /**
-     * Revocation Registry ID
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0
-     */
-    revoc_reg_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):4:([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+))(:.+)?:CL_ACCUM:(.+$)
-    credential_preview: CredentialPreview;
     /**
      * Credential definition identifier
      * example:
      * WgWxqztrNooG92RXvxSTWv:3:CL:20:tag
      */
     cred_def_id: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
-    /**
-     * Whether to remove the credential exchange record on completion
-     */
-    auto_remove?: boolean;
+    credential_preview: CredentialPreview;
     /**
      * Whether to respond automatically to credential requests, creating and issuing requested credentials
      */
     auto_issue?: boolean;
     /**
-     * Human-readable comment
+     * Record trace information, based on agent configuration
      */
-    comment?: string;
+    trace?: boolean;
     /**
      * Connection identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     connection_id: string; // uuid
+    /**
+     * Whether to remove the credential exchange record on completion (overrides --preserve-exchange-records configuration setting)
+     */
+    auto_remove?: boolean;
+    /**
+     * Human-readable comment
+     */
+    comment?: string;
 }
 export interface V10CredentialProblemReportRequest {
     explain_ltxt: string;
 }
 export interface V10CredentialProposalRequestMand {
     /**
-     * Revocation Registry ID
+     * Schema issuer DID
      * example:
-     * WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0
+     * WgWxqztrNooG92RXvxSTWv
      */
-    revoc_reg_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):4:([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+))(:.+)?:CL_ACCUM:(.+$)
-    /**
-     * Schema identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
-     */
-    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
-    /**
-     * Schema name
-     * example:
-     * preferences
-     */
-    schema_name?: string;
-    credential_proposal: CredentialPreview;
-    /**
-     * Schema version
-     * example:
-     * 1.0
-     */
-    schema_version?: string; // ^[0-9.]+$
+    schema_issuer_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
     /**
      * Credential definition identifier
      * example:
@@ -1318,19 +1185,36 @@ export interface V10CredentialProposalRequestMand {
      */
     cred_def_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
     /**
-     * Schema issuer DID
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
-     */
-    schema_issuer_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
-    /**
      * Credential issuer DID
      * example:
      * WgWxqztrNooG92RXvxSTWv
      */
     issuer_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
     /**
-     * Whether to remove the credential exchange record on completion
+     * Schema identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
+     */
+    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
+    /**
+     * Record trace information, based on agent configuration
+     */
+    trace?: boolean;
+    /**
+     * Connection identifier
+     * example:
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     */
+    connection_id: string; // uuid
+    /**
+     * Schema version
+     * example:
+     * 1.0
+     */
+    schema_version?: string; // ^[0-9.]+$
+    credential_proposal: CredentialPreview;
+    /**
+     * Whether to remove the credential exchange record on completion (overrides --preserve-exchange-records configuration setting)
      */
     auto_remove?: boolean;
     /**
@@ -1338,38 +1222,19 @@ export interface V10CredentialProposalRequestMand {
      */
     comment?: string;
     /**
-     * Connection identifier
+     * Schema name
      * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     * preferences
      */
-    connection_id: string; // uuid
+    schema_name?: string;
 }
 export interface V10CredentialProposalRequestOpt {
     /**
-     * Revocation Registry ID
+     * Schema issuer DID
      * example:
-     * WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0
+     * WgWxqztrNooG92RXvxSTWv
      */
-    revoc_reg_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):4:([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+))(:.+)?:CL_ACCUM:(.+$)
-    /**
-     * Schema identifier
-     * example:
-     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
-     */
-    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
-    /**
-     * Schema name
-     * example:
-     * preferences
-     */
-    schema_name?: string;
-    credential_proposal?: CredentialPreview;
-    /**
-     * Schema version
-     * example:
-     * 1.0
-     */
-    schema_version?: string; // ^[0-9.]+$
+    schema_issuer_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
     /**
      * Credential definition identifier
      * example:
@@ -1377,19 +1242,36 @@ export interface V10CredentialProposalRequestOpt {
      */
     cred_def_id?: string; // ^([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}):3:CL:(([1-9][0-9]*)|([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+)):(.+)?$
     /**
-     * Schema issuer DID
-     * example:
-     * WgWxqztrNooG92RXvxSTWv
-     */
-    schema_issuer_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
-    /**
      * Credential issuer DID
      * example:
      * WgWxqztrNooG92RXvxSTWv
      */
     issuer_did?: string; // ^(did:sov:)?[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}$
     /**
-     * Whether to remove the credential exchange record on completion
+     * Schema identifier
+     * example:
+     * WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0
+     */
+    schema_id?: string; // ^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21,22}:2:.+:[0-9.]+$
+    /**
+     * Record trace information, based on agent configuration
+     */
+    trace?: boolean;
+    /**
+     * Connection identifier
+     * example:
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     */
+    connection_id: string; // uuid
+    /**
+     * Schema version
+     * example:
+     * 1.0
+     */
+    schema_version?: string; // ^[0-9.]+$
+    credential_proposal?: CredentialPreview;
+    /**
+     * Whether to remove the credential exchange record on completion (overrides --preserve-exchange-records configuration setting)
      */
     auto_remove?: boolean;
     /**
@@ -1397,52 +1279,16 @@ export interface V10CredentialProposalRequestOpt {
      */
     comment?: string;
     /**
-     * Connection identifier
+     * Schema name
      * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     * preferences
      */
-    connection_id: string; // uuid
+    schema_name?: string;
 }
 export interface V10CredentialStoreRequest {
     credential_id?: string;
 }
 export interface V10PresentationExchange {
-    /**
-     * Prover choice to auto-present proof as verifier requests
-     * example:
-     * false
-     */
-    auto_present?: boolean;
-    /**
-     * Present-proof exchange initiator: self or external
-     * example:
-     * self
-     */
-    initiator?: "self" | "external";
-    /**
-     * Connection identifier
-     * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
-     */
-    connection_id?: string;
-    /**
-     * Time of record creation
-     * example:
-     * 2020-03-16 01:28:09Z
-     */
-    created_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
-    /**
-     * Presentation exchange identifier
-     * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
-     */
-    presentation_exchange_id?: string;
-    /**
-     * Present-proof exchange role: prover or verifier
-     * example:
-     * prover
-     */
-    role?: "prover" | "verifier";
     /**
      * Present-proof exchange state
      * example:
@@ -1450,9 +1296,59 @@ export interface V10PresentationExchange {
      */
     state?: string;
     /**
+     * Present-proof exchange initiator: self or external
+     * example:
+     * self
+     */
+    initiator?: "self" | "external";
+    /**
+     * Record trace information, based on agent configuration
+     */
+    trace?: boolean;
+    /**
+     * Connection identifier
+     * example:
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     */
+    connection_id?: string;
+    /**
+     * Thread identifier
+     * example:
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     */
+    thread_id?: string;
+    /**
+     * Presentation exchange identifier
+     * example:
+     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     */
+    presentation_exchange_id?: string;
+    /**
      * (Indy) presentation request (also known as proof request)
      */
     presentation_request?: {
+    };
+    /**
+     * Error message
+     * example:
+     * Invalid structure
+     */
+    error_msg?: string;
+    /**
+     * Time of last record update
+     * example:
+     * 2020-04-23 08:50:50Z
+     */
+    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
+    /**
+     * Serialized presentation proposal message
+     */
+    presentation_proposal_dict?: {
+    };
+    /**
+     * (Indy) presentation (also known as proof)
+     */
+    presentation?: {
     };
     /**
      * Whether presentation is verified: true or false
@@ -1461,33 +1357,23 @@ export interface V10PresentationExchange {
      */
     verified?: "true" | "false";
     /**
-     * Error message
+     * Prover choice to auto-present proof as verifier requests
      * example:
-     * Invalid structure
+     * false
      */
-    error_msg?: string;
+    auto_present?: boolean;
     /**
-     * (Indy) presentation (also known as proof)
-     */
-    presentation?: {
-    };
-    /**
-     * Serialized presentation proposal message
-     */
-    presentation_proposal_dict?: {
-    };
-    /**
-     * Thread identifier
+     * Present-proof exchange role: prover or verifier
      * example:
-     * 3fa85f64-5717-4562-b3fc-2c963f66afa6
+     * prover
      */
-    thread_id?: string;
+    role?: "prover" | "verifier";
     /**
-     * Time of last record update
+     * Time of record creation
      * example:
-     * 2020-03-16 01:28:09Z
+     * 2020-04-23 08:50:50Z
      */
-    updated_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
+    created_at?: string; // ^\d{4}-\d\d-\d\d[T ]\d\d:\d\d(?:\:(?:\d\d(?:\.\d{1,6})?))?(?:[+-]\d\d:?\d\d|Z|)$
 }
 export interface V10PresentationExchangeList {
     /**
@@ -1496,34 +1382,42 @@ export interface V10PresentationExchangeList {
     results?: V10PresentationExchange[];
 }
 export interface V10PresentationProposalRequest {
-    /**
-     * Whether to respond automatically to presentation requests, building and presenting requested proof
-     */
-    auto_present?: boolean;
     presentation_proposal: PresentationPreview;
     /**
-     * Human-readable comment
+     * Record trace information, based on agent configuration
      */
-    comment?: string;
+    trace?: boolean;
     /**
      * Connection identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     connection_id: string; // uuid
+    /**
+     * Whether to respond automatically to presentation requests, building and presenting requested proof
+     */
+    auto_present?: boolean;
+    /**
+     * Human-readable comment
+     */
+    comment?: string;
 }
 export interface V10PresentationRequest {
     /**
-     * Nested object mapping proof request attribute referents to requested-attribute specifiers
+     * Record trace information, based on agent configuration
      */
-    requested_attributes: {
-        [name: string]: IndyRequestedCredsRequestedAttr;
-    };
+    trace?: boolean;
     /**
      * Nested object mapping proof request predicate referents to requested-predicate specifiers
      */
     requested_predicates: {
         [name: string]: IndyRequestedCredsRequestedPred;
+    };
+    /**
+     * Nested object mapping proof request attribute referents to requested-attribute specifiers
+     */
+    requested_attributes: {
+        [name: string]: IndyRequestedCredsRequestedAttr;
     };
     /**
      * Self-attested attributes to build into proof
@@ -1536,11 +1430,23 @@ export interface V10PresentationRequestRequest {
     proof_request: IndyProofRequest;
     comment?: string;
     /**
+     * Record trace information, based on agent configuration
+     */
+    trace?: boolean;
+    /**
      * Connection identifier
      * example:
      * 3fa85f64-5717-4562-b3fc-2c963f66afa6
      */
     connection_id: string; // uuid
+}
+export interface V10PublishRevocationsResult {
+    /**
+     * Credential revocation ids published by revocation registry id
+     */
+    results?: {
+        [name: string]: string[];
+    };
 }
 export interface Witness {
     /**

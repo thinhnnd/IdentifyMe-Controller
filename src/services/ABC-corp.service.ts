@@ -67,7 +67,7 @@ export class ABCCorpAgentService extends BaseAgentService {
             };
         });
         reqPreds.length > 0 && reqPreds.forEach(predicate => {
-            const key = `0_${predicate.name}_GE_uuid`;
+            const key = `0_${predicate.name}_compare_uuid`;
             requested_predicates[key] = {
                 ...predicate
             };
@@ -75,7 +75,7 @@ export class ABCCorpAgentService extends BaseAgentService {
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
             "version": "1.0",
-            "nonce": (Math.random() * 1e20).toString() + Math.floor(Math.random() * 1e20).toString(),
+            // "nonce": (Math.random() * 1e20).toString() + Math.floor(Math.random() * 1e20).toString(),
             "requested_attributes": requested_attributes,
             "requested_predicates": requested_predicates
         }
@@ -181,17 +181,18 @@ export class ABCCorpAgentService extends BaseAgentService {
         switch (payload.state) {
             case "presentation_received":
                 console.log(`Process the proof provided by X`);
+                console.log('presentation_exchange_id:', payload.presentation_exchange_id)
                 const proof = await this.verifyPresentation(payload.presentation_exchange_id);
                 console.log('verified :', proof.verified);
-                if (proof.verified === "true") {
-                    const isProofOfEducation = proof.presentation_request["name"].includes("Education");
-                    console.log("presentation:", JSON.stringify(proof.presentation));
-                    if (isProofOfEducation) {
-                        payload.presentation.identifiers.forEach(id_spec => {
-                            console.log("id_spec:", JSON.stringify(id_spec));
-                        });
-                    }
-                }
+                // if (proof.verified === "true") {
+                    // const isProofOfEducation = proof.presentation_request["name"].includes("Education");
+                    // console.log("presentation:", JSON.stringify(proof.presentation));
+                    // if (isProofOfEducation) {
+                    //     payload.presentation.identifiers.forEach(id_spec => {
+                    //         console.log("id_spec:", JSON.stringify(id_spec));
+                    //     });
+                    // }
+                // }
                 break;
             case "presentation_sent":
                 console.log("presentation_sent");
@@ -204,6 +205,11 @@ export class ABCCorpAgentService extends BaseAgentService {
                 break;
             case "verified":
                 console.log("verified");
+                // const isProofOfEducation = payload.presentation_request["name"].includes("Education");
+                // console.log("presentation:", JSON.stringify(payload.presentation));
+                payload.presentation.identifiers.forEach(id_spec => {
+                    console.log("id_spec:", JSON.stringify(id_spec));
+                });
                 break;
             case "proposal_sent":
                 console.log("proposal_sent");
