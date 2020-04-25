@@ -62,20 +62,17 @@ export class ABCCorpAgentService extends BaseAgentService {
         let requested_predicates = {}
         reqAttrs.forEach(attr => {
             const key = `0_${attr.name}_uuid`;
-            requested_attributes[key] = {
-                ...attr
-            };
+            requested_attributes[key] = attr;
         });
-        reqPreds.length > 0 && reqPreds.forEach(predicate => {
-            const key = `0_${predicate.name}_compare_uuid`;
-            requested_predicates[key] = {
-                ...predicate
-            };
-        });
+        if (reqPreds.length > 0)
+            reqPreds.forEach(predicate => {
+                const key = `0_${predicate.name}_GE_uuid`;
+                requested_predicates[key] = predicate;
+            });
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
             "version": "1.0",
-            "nonce": (Math.random() * 1e16).toString() + Math.floor(Math.random() * 1e16).toString(),
+            "nonce": (Math.random() * 1e20).toString() + Math.floor(Math.random() * 1e20).toString(),
             "requested_attributes": requested_attributes,
             "requested_predicates": requested_predicates
         }
@@ -185,13 +182,13 @@ export class ABCCorpAgentService extends BaseAgentService {
                 const proof = await this.verifyPresentation(payload.presentation_exchange_id);
                 console.log('verified :', proof.verified);
                 // if (proof.verified === "true") {
-                    // const isProofOfEducation = proof.presentation_request["name"].includes("Education");
-                    // console.log("presentation:", JSON.stringify(proof.presentation));
-                    // if (isProofOfEducation) {
-                    //     payload.presentation.identifiers.forEach(id_spec => {
-                    //         console.log("id_spec:", JSON.stringify(id_spec));
-                    //     });
-                    // }
+                // const isProofOfEducation = proof.presentation_request["name"].includes("Education");
+                // console.log("presentation:", JSON.stringify(proof.presentation));
+                // if (isProofOfEducation) {
+                //     payload.presentation.identifiers.forEach(id_spec => {
+                //         console.log("id_spec:", JSON.stringify(id_spec));
+                //     });
+                // }
                 // }
                 break;
             case "presentation_sent":

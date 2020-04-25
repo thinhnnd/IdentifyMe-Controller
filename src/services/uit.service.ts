@@ -56,28 +56,17 @@ export class UITAgentService extends BaseAgentService {
         let requested_predicates = {}
         reqAttrs.forEach(attr => {
             const key = `0_${attr.name}_uuid`;
-            requested_attributes[key] = {
-                ...attr,
-                "non_revoked": {
-                    "from_epoch": Date.now(),
-                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
-                }
-            };
+            requested_attributes[key] = attr;
         });
-        reqPreds.length > 0 && reqPreds.forEach(predicate => {
-            const key = `0_${predicate.name}_GE_uuid`;
-            requested_predicates[key] = {
-                ...predicate,
-                "non_revoked": {
-                    "from_epoch": Date.now(),
-                    "to_epoch": Date.now() + 1000 * 60 * 60 * 24 * 7
-                }
-            };
-        });
+        if (reqPreds.length > 0)
+            reqPreds.forEach(predicate => {
+                const key = `0_${predicate.name}_GE_uuid`;
+                requested_predicates[key] = predicate;
+            });
         const indy_proof_request: IndyProofRequest = {
             "name": payload.proof_request_name,
             "version": "1.0",
-            "nonce": (Math.random() * 1e16).toString() + Math.floor(Math.random() * 1e16).toString(),
+            "nonce": (Math.random() * 1e20).toString() + Math.floor(Math.random() * 1e20).toString(),
             "requested_attributes": requested_attributes,
             "requested_predicates": requested_predicates
         }
