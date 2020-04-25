@@ -1,4 +1,4 @@
-FROM bcgovimages/aries-cloudagent:py36-1.14-1_0.5.0
+FROM bcgovimages/aries-cloudagent:py36-1.14-1_0.5.1
 RUN echo "Pulling bcgovimages/aries-cloudagent"
 USER root
 ENV NODE_VERSION=12.16.1
