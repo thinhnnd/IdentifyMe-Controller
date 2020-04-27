@@ -21,7 +21,8 @@
     "randomstring": "^1.1.5",
     "socket.io": "^2.3.0",
     "ts-node": "^8.6.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "uuid": "^7.0.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.6",
@@ -30,6 +31,7 @@
     "@types/morgan": "^1.9.0",
     "@types/node": "^13.9.2",
     "@types/randomstring": "^1.1.6",
-    "@types/socket.io": "^2.1.4"
+    "@types/socket.io": "^2.1.4",
+    "@types/uuid": "^7.0.2"
   }
 }

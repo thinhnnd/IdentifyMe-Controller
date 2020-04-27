@@ -1,8 +1,19 @@
 import { Request, Response, Router } from 'express';
-import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema } from '../interface';
+import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema, SendProofRequestPayload } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
-import { SchemaSendRequest, V10CredentialOfferRequest, CredentialPreview, CredentialDefinitionGetResults, CredentialDefinitionsCreatedResults, SchemasCreatedResults, SchemaGetResults } from 'src/interface/api';
+import {
+    SchemaSendRequest,
+    V10CredentialOfferRequest,
+    CredentialPreview,
+    CredentialDefinitionGetResults,
+    CredentialDefinitionsCreatedResults,
+    SchemasCreatedResults,
+    SchemaGetResults,
+    IndyProofReqAttrSpec,
+    IndyProofReqPredSpec
+}
+    from 'src/interface/api';
 export class UITController implements IBaseController {
     public path = '/';
     public router = Router();
@@ -26,6 +37,8 @@ export class UITController implements IBaseController {
         this.getAllCredentialDefinitions();
         this.getCredentialDefinitionsByFilter();
         this.getCredentialDefinitionsById();
+
+        this.sendProofRequest();
     }
     /**
      * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -52,7 +65,10 @@ export class UITController implements IBaseController {
             try {
                 const credentialPreview: CredentialPreview = {
                     "@type": "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/issue-credential/1.0/credential-preview",
-                    attributes: req.body.attributes
+                    attributes: [...req.body.attributes, {
+                        "name": "timestamp",
+                        "value": Date.now().toString()
+                    }]
                 }
                 const offer: V10CredentialOfferRequest = {
                     connection_id: req.body.connection_id,
@@ -61,7 +77,7 @@ export class UITController implements IBaseController {
                     cred_def_id: req.body.cred_def_id,
                     comment: req.body.comment,
                     auto_remove: req.body.auto_remove,
-                    revoc_reg_id: req.body.revoc_reg_id,
+                    // revoc_reg_id: req.body.revoc_reg_id,
                 }
                 const result = await this.agentService.issuerSendOffer(offer);
                 console.log(result);
@@ -82,7 +98,9 @@ export class UITController implements IBaseController {
         this.router.post('/schemas', async (req, res) => {
             try {
                 const body: SchemaSendRequest = {
-                    attributes: req.body.attributes,
+                    attributes: req.body.attributes.includes("timestamp")
+                        ? req.body.attributes
+                        : [...req.body.attributes, "timestamp"],
                     schema_name: req.body.schema_name,
                     schema_version: req.body.schema_version,
                 }
@@ -102,7 +120,7 @@ export class UITController implements IBaseController {
                 const schema = await this.agentService.getSchema(schemaId);
                 const crefDef = await this.agentService.getSpecialCredDef({ schema_id: schemaId });
                 const result = {
-                    schema_json: { ...schema.schema_json, credential_definition_id: crefDef.credential_definition_ids[0] }
+                    schema_json: { ...schema.schema, credential_definition_id: crefDef.credential_definition_ids[0] }
                 }
                 res.json(result);
             } catch (error) {
@@ -189,4 +207,39 @@ export class UITController implements IBaseController {
             }
         })
     }
+    //#region Proof
+    private async sendProofRequest() {
+        this.router.post('/present-proof/send-request', async (req, res) => {
+            const body = req.body;
+            const reqAttrs: IndyProofReqAttrSpec[] = body.request_attributes.schema_attrs.map((attr: string) => {
+                return {
+                    name: attr,
+                    restrictions: body.request_attributes.restrictions
+                }
+            })
+            //zero knowledge proof
+            let reqPreds: IndyProofReqPredSpec[] = [];
+            if (body.requested_predicates) {
+                reqPreds = [{
+                    "name": body.requested_predicates.name,
+                    "p_type": body.requested_predicates.p_type,
+                    "p_value": Number(body.requested_predicates.p_value),
+                    "restrictions": body.requested_predicates.restrictions,
+                }];
+            }
+            try {
+                const payload: SendProofRequestPayload = {
+                    requested_attributes: reqAttrs,
+                    requested_predicates: reqPreds,
+                    proof_request_name: body.proof_request_name,
+                    comment: body.comment
+                }
+                const resp = await this.agentService.buildAndSendProofRequest(body.connection_id, payload);
+                res.json(resp);
+            } catch (error) {
+                res.json(error);
+            }
+        })
+    }
+    //#endregion
 }

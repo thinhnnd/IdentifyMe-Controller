@@ -1,4 +1,5 @@
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
+import { IndyProofReqAttrSpec, IndyProofReqPredSpec } from './api';
 export * from './webhook-payload';
 export interface AppOptions {
     port: number | string;
@@ -57,4 +58,10 @@ export interface CredentialDefinitionsCreatedParams {
     schema_version?: string
     issuer_did?: string
     cred_def_id?: string
+}
+export interface SendProofRequestPayload {
+    requested_attributes: IndyProofReqAttrSpec[],
+    requested_predicates: IndyProofReqPredSpec[],
+    proof_request_name: string
+    comment: string
 }

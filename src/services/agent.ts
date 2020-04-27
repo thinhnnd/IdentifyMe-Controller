@@ -6,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
 import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams, IssueCredentialPayload, BasicMessagesPayload, PresentProofPayload, ConnectionsPayload } from '../interface/index';
-import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults } from '../interface/api';
+import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults, V10PresentationExchange, V10PresentationRequestRequest, PingRequest } from '../interface/api';
 import * as cors from 'cors';
 import * as socketIO from 'socket.io';
 import { createServer } from 'http';
@@ -225,6 +225,19 @@ export class BaseAgentService implements IBaseAgent {
         const result: ConnectionList = await this.adminRequest(`/connections`, { method: 'get' });
         return result;
     }
+    async sendTrustPing(connectionId: string, body: PingRequest) {
+        try {
+            const response = await this.adminRequest(`/connections/${connectionId}/send-ping`, {
+                method: "POST",
+                data: body
+            });
+            console.log("BaseAgentService -> sendTrustPing -> response", response)
+            return response
+        } catch (error) {
+            console.log("BaseAgentService -> sendTrustPing -> error", error)
+        }
+
+    }
     //#endregion
 
     //#region cloud agent process
@@ -241,6 +254,7 @@ export class BaseAgentService implements IBaseAgent {
             ['--wallet-type', this.walletType],
             ['--wallet-name', this.walletName],
             ['--wallet-key', this.walletKey],
+            ['--preserve-exchange-records']
         ];
         if (this.genesisData) options.push(['--genesis-transactions', this.genesisData])
         if (this.seed) options.push(['--seed', this.seed])
@@ -324,7 +338,13 @@ export class BaseAgentService implements IBaseAgent {
         const webhookServer = createServer(app);
         const io = socketIO.listen(webhookServer, { origins: '*:*' })
         app.set('io', io);
-        const path = ['/webhooks/topic/connections', '/webhooks/topic/issue_credential', '/webhooks/topic/basicmessages', '/webhooks/topic/present_proof']
+        const path = [
+            '/webhooks/topic/connections',
+            '/webhooks/topic/issue_credential',
+            '/webhooks/topic/basicmessages',
+            '/webhooks/topic/present_proof',
+            '/webhooks/topic/problem_report'
+        ]
         app.use(express.json());
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(cors());
@@ -336,18 +356,35 @@ export class BaseAgentService implements IBaseAgent {
         app.get("/", (req, res) => {
             res.send("Webhook is running");
         });
+        const connNotifiedArray = [];
+        const stateNotified = ["active", "response"];
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
-            let payload: IssueCredentialPayload | BasicMessagesPayload | PresentProofPayload | ConnectionsPayload;
+            //message in DIDComm
+            let payload: V10PresentationExchange | V10CredentialExchange | BasicMessagesPayload | ConnectionRecord;
             payload = req.body;
             const socketIo: socketIO.Server = req.app.get('io');
-            if (topic === 'connections' && ['active', 'response'].includes(payload.state)) {
-                console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
-                socketIo.sockets.emit(payload.connection_id, payload);
+            //shared web hook handler
+            if (topic === "connections") {
+                if (stateNotified.includes(payload.state) && !connNotifiedArray.includes(this.connectionId)) {
+                    console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
+                    socketIo.sockets.emit(payload.connection_id, payload);
+                    connNotifiedArray.push(payload.connection_id);
+                }
+                if (payload.state === "inactive") {
+                    //TODO remove in connNotifiedArray if connection is inactive
+                }
+            }
+            else if (topic === "proof_request" && payload.state === "verified") {
+                const presentationExchange = payload as V10PresentationExchange
+                if (presentationExchange.verified) {
+                    const id = presentationExchange.presentation_exchange_id;
+                    socketIo.sockets.emit(`proof_verified_${id}`, presentationExchange);
+                }
             }
             try {
                 await this.processHandler(topic, payload);
-                return res.status(200);
+                return res.sendStatus(200);
             } catch (error) {
                 console.log(error);
             }
@@ -380,7 +417,26 @@ export class BaseAgentService implements IBaseAgent {
         });
         return response;
     }
+    //#endregion
 
+    //#region Present Proof
+
+    public async sendProofRequest(proofRequest: V10PresentationRequestRequest) {
+        const response: V10PresentationExchange = await this.adminRequest(`/present-proof/send-request`, {
+            method: 'POST',
+            data: proofRequest
+        })
+        return response;
+    }
+    public async verifyPresentation(presentation_exchange_id: string) {
+        const response: V10PresentationExchange = await this.adminRequest(`/present-proof/records/${presentation_exchange_id}/verify-presentation`,
+            {
+                method: 'POST'
+            });
+        return response;
+    }
+
+    //#endregion
     //#region health check
     async fetchTiming() {
         const resp = await this.adminRequest('/timing', { method: 'GET' });
@@ -392,4 +448,7 @@ export class BaseAgentService implements IBaseAgent {
     //#endregion
 
 
+    //#region 
+
+    //#endregion
 }

@@ -3,9 +3,10 @@ import { BaseAgentService } from './agent';
 import { RegisterSchemasDTO } from '../dtos';
 import { getGenesisTxns } from '../utils';
 import { SEED, AGENT_MODULE, WEB_HOOK_URL } from '../constant';
-import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload } from '../interface';
+import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload, SendProofRequestPayload } from '../interface';
 import { generate } from 'randomstring';
-import { V10CredentialExchange } from 'src/interface/api';
+import { V10CredentialExchange, IndyProofReqAttrSpec, IndyProofReqPredSpec, IndyProofRequest, V10PresentationRequestRequest, V10PresentationExchange, ConnectionRecord, V10CredentialProblemReportRequest } from 'src/interface/api';
+import { v4 } from 'uuid';
 export class UITAgentService extends BaseAgentService {
     public credAttrs: string[];
     public credState: {};
@@ -48,11 +49,39 @@ export class UITAgentService extends BaseAgentService {
         const response: V10CredentialExchange = await this.adminRequest(`/issue-credential/records/${credential_exchange_id}/issue`, { method: 'POST', data: data })
         return response
     }
+    public async buildAndSendProofRequest(connection_id: string, payload: SendProofRequestPayload) {
+        const reqAttrs: IndyProofReqAttrSpec[] = payload.requested_attributes
+        const reqPreds: IndyProofReqPredSpec[] = payload.requested_predicates
+        let requested_attributes = {}
+        let requested_predicates = {}
+        reqAttrs.forEach(attr => {
+            const key = `0_${attr.name}_uuid`;
+            requested_attributes[key] = attr;
+        });
+        if (reqPreds.length > 0)
+            reqPreds.forEach(predicate => {
+                const key = `0_${predicate.name}_GE_uuid`;
+                requested_predicates[key] = predicate;
+            });
+        const indy_proof_request: IndyProofRequest = {
+            "name": payload.proof_request_name,
+            "version": "1.0",
+            "nonce": (Math.random() * 1e20).toString() + Math.floor(Math.random() * 1e20).toString(),
+            "requested_attributes": requested_attributes,
+            "requested_predicates": requested_predicates
+        }
+        const proofRequest: V10PresentationRequestRequest = {
+            "connection_id": connection_id,
+            "proof_request": indy_proof_request,
+        }
+        const response = await this.sendProofRequest(proofRequest);
+        return response;
+    }
     /**
      * @param message payload of agent
      * @description webhook handler for connections
      */
-    handle_connections = async (message: ConnectionsPayload) => {
+    handle_connections = async (message: ConnectionRecord) => {
         const state = message.state;
         if (message["connection_id"] === this.connectionId) {
             console.log("connection_id:", this.connectionId);
@@ -64,13 +93,13 @@ export class UITAgentService extends BaseAgentService {
                     console.log("request created");
                     break;
                 case "response":
+                    // const resp = await this.sendTrustPing(this.connectionId, { comment: "Ping connection" });
                     console.log("response received");
                     break;
                 case "active":
                     console.log("connection active");
                     console.log(`Connected to ${message["their_label"]}`);
                     break;
-                //TODO: socket emit to notify UI
                 case "inactive":
                     console.log("connection inactive");
                     break;
@@ -80,13 +109,10 @@ export class UITAgentService extends BaseAgentService {
                 default:
                     break;
             }
-            // if (message["state"] === "active") {
-            //     console.log(`Connected to ${message["their_label"]}`);
-            // }
         }
     }
 
-    handle_issue_credential = async (payload: IssueCredentialPayload) => {
+    handle_issue_credential = async (payload: V10CredentialExchange) => {
         // console.log("UITAgentService -> handle_issue_credential -> payload", payload)
         const state = payload["state"];
         const credential_exchange_id = payload["credential_exchange_id"]
@@ -111,8 +137,8 @@ export class UITAgentService extends BaseAgentService {
                 //B4: Issuer received credential request from Holder
                 console.log(`#4: ${this.agentName} received credential request from Holder`);
                 const data = {
-                    credential_preview: payload.credential_proposal_dict.credential_proposal,
-                    comment: payload.credential_proposal_dict.comment
+                    credential_preview: payload.credential_proposal_dict["credential_proposal"],
+                    comment: payload.credential_proposal_dict["comment"]
                 }
                 console.log("UITAgentService -> handle_issue_credential -> data", data);
                 const response = await this.issueCredential(credential_exchange_id, data);
@@ -139,12 +165,40 @@ export class UITAgentService extends BaseAgentService {
                 break;
         }
     }
-    handle_present_proof = async (payload: PresentProofPayload) => {
+    handle_present_proof = async (payload: V10PresentationExchange) => {
         console.log("UITAgentService -> handle_present_proof -> payload", payload)
-        //TODO
+        switch (payload.state) {
+            case "presentation_received":
+                console.log(`Verifying proof provided by X`);
+                const proof = await this.verifyPresentation(payload.presentation_exchange_id);
+                console.log(JSON.stringify(proof));
+                break;
+            case "presentation_sent":
+                console.log("presentation_sent");
+                break;
+            case "request_received":
+                console.log("request_received");
+                break;
+            case "request_sent":
+                console.log("request_sent");
+                break;
+            case "verified":
+                console.log("proof is verified");
+                break;
+            case "proposal_sent":
+                console.log("proposal_sent");
+                break;
+            case "proposal_received":
+                console.log("proposal_received");
+                break;
+            default: break;
+        }
     }
     handle_basicmessages = async (payload: BasicMessagesPayload) => {
         console.log("UITAgentService -> handle_basicmessages -> payload", payload)
         //TODO
+    }
+    handle_problem_report = async (payload: V10CredentialProblemReportRequest) => {
+        console.log("UITAgentService -> handle_problem_report -> payload", payload)
     }
 }
