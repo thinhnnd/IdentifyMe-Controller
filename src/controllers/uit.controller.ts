@@ -210,31 +210,31 @@ export class UITController implements IBaseController {
     //#region Proof
     private async sendProofRequest() {
         this.router.post('/present-proof/send-request', async (req, res) => {
-            const bodyExample = req.body;
-            const reqAttrs: IndyProofReqAttrSpec[] = bodyExample.request_attributes.schema_attrs.map((attr: string) => {
+            const body = req.body;
+            const reqAttrs: IndyProofReqAttrSpec[] = body.request_attributes.schema_attrs.map((attr: string) => {
                 return {
                     name: attr,
-                    restrictions: bodyExample.request_attributes.restrictions
+                    restrictions: body.request_attributes.restrictions
                 }
             })
             //zero knowledge proof
             let reqPreds: IndyProofReqPredSpec[] = [];
-            if (bodyExample.requested_predicates) {
+            if (body.requested_predicates) {
                 reqPreds = [{
-                    "name": bodyExample.requested_predicates.name,
-                    "p_type": bodyExample.requested_predicates.p_type,
-                    "p_value": Number(bodyExample.requested_predicates.p_value),
-                    "restrictions": bodyExample.requested_predicates.restrictions,
+                    "name": body.requested_predicates.name,
+                    "p_type": body.requested_predicates.p_type,
+                    "p_value": Number(body.requested_predicates.p_value),
+                    "restrictions": body.requested_predicates.restrictions,
                 }];
             }
             try {
                 const payload: SendProofRequestPayload = {
                     requested_attributes: reqAttrs,
                     requested_predicates: reqPreds,
-                    proof_request_name: bodyExample.proof_request_name,
-                    comment: bodyExample.comment
+                    proof_request_name: body.proof_request_name,
+                    comment: body.comment
                 }
-                const resp = await this.agentService.buildAndSendProofRequest(bodyExample.connection_id, payload);
+                const resp = await this.agentService.buildAndSendProofRequest(body.connection_id, payload);
                 res.json(resp);
             } catch (error) {
                 res.json(error);

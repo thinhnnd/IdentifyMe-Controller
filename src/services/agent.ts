@@ -339,9 +339,9 @@ export class BaseAgentService implements IBaseAgent {
         const io = socketIO.listen(webhookServer, { origins: '*:*' })
         app.set('io', io);
         const path = [
-            '/webhooks/topic/connections', 
-            '/webhooks/topic/issue_credential', 
-            '/webhooks/topic/basicmessages', 
+            '/webhooks/topic/connections',
+            '/webhooks/topic/issue_credential',
+            '/webhooks/topic/basicmessages',
             '/webhooks/topic/present_proof',
             '/webhooks/topic/problem_report'
         ]
@@ -357,21 +357,29 @@ export class BaseAgentService implements IBaseAgent {
             res.send("Webhook is running");
         });
         const connNotifiedArray = [];
-        const stateNotified = ["active","response"];
+        const stateNotified = ["active", "response"];
         app.post(path, async (req: express.Request, res: express.Response) => {
             const topic = req.path.split('/')[3];
-            let payload: V10CredentialExchange | BasicMessagesPayload | V10PresentationExchange | ConnectionRecord;
+            //message in DIDComm
+            let payload: V10PresentationExchange | V10CredentialExchange | BasicMessagesPayload | ConnectionRecord;
             payload = req.body;
             const socketIo: socketIO.Server = req.app.get('io');
             //shared web hook handler
             if (topic === "connections") {
-                if(stateNotified.includes(payload.state) && !connNotifiedArray.includes(this.connectionId)) {
+                if (stateNotified.includes(payload.state) && !connNotifiedArray.includes(this.connectionId)) {
                     console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
                     socketIo.sockets.emit(payload.connection_id, payload);
                     connNotifiedArray.push(payload.connection_id);
                 }
-                if(payload.state === "inactive") {
+                if (payload.state === "inactive") {
                     //TODO remove in connNotifiedArray if connection is inactive
+                }
+            }
+            else if (topic === "proof_request" && payload.state === "verified") {
+                const presentationExchange = payload as V10PresentationExchange
+                if (presentationExchange.verified) {
+                    const id = presentationExchange.presentation_exchange_id;
+                    socketIo.sockets.emit(`proof_verified_${id}`, presentationExchange);
                 }
             }
             try {

@@ -169,9 +169,9 @@ export class UITAgentService extends BaseAgentService {
         console.log("UITAgentService -> handle_present_proof -> payload", payload)
         switch (payload.state) {
             case "presentation_received":
-                console.log(`Process the proof provided by X`);
+                console.log(`Verifying proof provided by X`);
                 const proof = await this.verifyPresentation(payload.presentation_exchange_id);
-                console.log(proof);
+                console.log(JSON.stringify(proof));
                 break;
             case "presentation_sent":
                 console.log("presentation_sent");
@@ -183,7 +183,7 @@ export class UITAgentService extends BaseAgentService {
                 console.log("request_sent");
                 break;
             case "verified":
-                console.log("verified");
+                console.log("proof is verified");
                 break;
             case "proposal_sent":
                 console.log("proposal_sent");
