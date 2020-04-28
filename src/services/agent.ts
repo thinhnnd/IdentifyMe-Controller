@@ -160,7 +160,7 @@ export class BaseAgentService implements IBaseAgent {
         try {
             const data: SchemaSendResults = await this.adminRequest('/schemas', { method: 'POST', data: schemaBody });
             //create credential definition
-            const credDefforSchema = await this.createCredentialsDefinition({ schema_id: data.schema_id });
+            const credDefforSchema = await this.createCredentialsDefinition({ schema_id: data.schema_id, tag: `${this.agentName}_default` });
             return { data, credDefforSchema };
         } catch (error) {
             throw error;
