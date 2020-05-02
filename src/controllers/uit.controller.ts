@@ -211,23 +211,25 @@ export class UITController implements IBaseController {
     private async sendProofRequest() {
         this.router.post('/present-proof/send-request', async (req, res) => {
             const body = req.body;
-            const reqAttrs: IndyProofReqAttrSpec[] = body.request_attributes.schema_attrs.map((attr: string) => {
-                return {
-                    name: attr,
-                    restrictions: body.request_attributes.restrictions
-                }
-            })
-            //zero knowledge proof
-            let reqPreds: IndyProofReqPredSpec[] = [];
-            if (body.requested_predicates) {
-                reqPreds = [{
-                    "name": body.requested_predicates.name,
-                    "p_type": body.requested_predicates.p_type,
-                    "p_value": Number(body.requested_predicates.p_value),
-                    "restrictions": body.requested_predicates.restrictions,
-                }];
-            }
+            console.log("UITController -> sendProofRequest -> body", body)
             try {
+                const reqAttrs: IndyProofReqAttrSpec[] = body.requested_attributes.schema_attrs.map((attr: string) => {
+                    return {
+                        name: attr,
+                        restrictions: body.requested_attributes.restrictions
+                    }
+                })
+                //zero knowledge proof
+                let reqPreds: IndyProofReqPredSpec[] = [];
+                if (body.requested_predicates.length > 0) {
+                    reqPreds = body.requested_predicates.map((predicate: IndyProofReqPredSpec) => ({
+                        name: predicate.name,
+                        p_type: predicate.p_type,
+                        p_value: Number(predicate.p_value),
+                        restrictions: predicate.restrictions
+                    }))
+                }
+
                 const payload: SendProofRequestPayload = {
                     requested_attributes: reqAttrs,
                     requested_predicates: reqPreds,
