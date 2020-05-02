@@ -213,58 +213,35 @@ export class ABCCorpController implements IBaseController {
 
     private async sendProofRequest() {
         this.router.post('/present-proof/send-request', async (req, res) => {
-            const bodyExample = req.body;
-            // const bodyExample = {
-            //     "connection_id": "",
-            //     "proof_request_name": "Proof Of Education",
-            //     "comment": "aaa"
-            //     "request_attributes": {
-            //         "schema_attrs": ["name", "date", "degree"],
-            //         "restrictions": [{ "credential_definition_id": "WgWxqztrNooG92RXvxSTWv:3:CL:20:tag", "issuer_did": "WgWxqztrNooG92RXvxSTWv" }]
-            //     },
-            // "requested_predicates": {
-            //     "name": "age",
-            //     "p_value": "18",
-            //     "p_type":  "<" | "<=" | ">=" | ">"
-            //     "restrictions": [{
-            //         "issuer_did": "",
-            //         "credential_definition_id": "",
-            //         "cred_def_id": "",
-            //         "schema_id": "",
-            //         "schema_issuer_did": "",
-            //         "schema_name": "",
-            //         "schema_version": "",
-            //     }]
-            // }
-            // }
-            const reqAttrs: IndyProofReqAttrSpec[] = bodyExample.request_attributes.schema_attrs.map((attr: string) => {
-                return {
-                    name: attr,
-                    restrictions: bodyExample.request_attributes.restrictions
-                }
-            })
-            //zero knowledge proof
-            let reqPreds: IndyProofReqPredSpec[] = [];
-            if (bodyExample.requested_predicates) {
-                reqPreds = [{
-                    "name": bodyExample.requested_predicates.name,
-                    "p_type": bodyExample.requested_predicates.p_type,
-                    "p_value": Number(bodyExample.requested_predicates.p_value),
-                    "restrictions": bodyExample.requested_predicates.restrictions
-                }];
-            }
+            const body = req.body;
             try {
+                const reqAttrs: IndyProofReqAttrSpec[] = body.requested_attributes.schema_attrs.map((attr: string) => {
+                    return {
+                        name: attr,
+                        restrictions: body.requested_attributes.restrictions
+                    }
+                })
+                //zero knowledge proof
+                let reqPreds: IndyProofReqPredSpec[] = [];
+                if (body.requested_predicates.length > 0) {
+                    reqPreds = body.requested_predicates.map((predicate: IndyProofReqPredSpec) => ({
+                        name: predicate.name,
+                        p_type: predicate.p_type,
+                        p_value: Number(predicate.p_value),
+                        restrictions: predicate.restrictions
+                    }))
+                }
+
                 const payload: SendProofRequestPayload = {
                     requested_attributes: reqAttrs,
                     requested_predicates: reqPreds,
-                    proof_request_name: bodyExample.proof_request_name,
-                    comment: bodyExample.comment
+                    proof_request_name: body.proof_request_name,
+                    comment: body.comment
                 }
-                const resp = await this.agentService.buildAndSendProofRequest(bodyExample.connection_id, payload);
+                const resp = await this.agentService.buildAndSendProofRequest(body.connection_id, payload);
                 res.json(resp);
             } catch (error) {
                 res.json(error);
-                console.log(error);
             }
         })
     }
