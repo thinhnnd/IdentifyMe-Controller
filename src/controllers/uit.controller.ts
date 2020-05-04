@@ -66,10 +66,7 @@ export class UITController implements IBaseController {
             try {
                 const credentialPreview: CredentialPreview = {
                     "@type": "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/issue-credential/1.0/credential-preview",
-                    attributes: [...req.body.attributes, {
-                        "name": "timestamp",
-                        "value": Date.now().toString()
-                    }]
+                    attributes: req.body.attributes
                 }
                 const offer: V10CredentialOfferRequest = {
                     connection_id: req.body.connection_id,
