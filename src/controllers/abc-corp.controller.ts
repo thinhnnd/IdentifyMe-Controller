@@ -46,6 +46,7 @@ export class ABCCorpController implements IBaseController {
 
         //Proof
         this.sendProofRequest();
+        this.getProofRequests();
     }
     /**
      * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -246,7 +247,7 @@ export class ABCCorpController implements IBaseController {
         })
     }
     private async getProofRequests() {
-        this.router.post('/present-proof', async (req, res) => {
+        this.router.get('/present-proof', async (req, res) => {
             try {
                 const resp = await this.agentService.getProofRequests();
                 res.json(resp);
