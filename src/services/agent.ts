@@ -436,7 +436,7 @@ export class BaseAgentService implements IBaseAgent {
         return response;
     }
     public async getProofRequests(){
-        const response: V10PresentationExchangeList = await this.adminRequest(`/present-proof/records/`,
+        const response: V10PresentationExchangeList = await this.adminRequest(`/present-proof/records`,
             {
                 method: 'GET'
             });
