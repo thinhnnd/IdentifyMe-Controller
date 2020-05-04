@@ -6,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { DEFAULT_INTERNAL_HOST, DEFAULT_EXTERNAL_HOST, LEDGER_URL, DEFAULT_POSTGRES, START_TIMEOUT, RUNMODE, WEB_HOOK_URL } from '../constant';
 import { IBaseAgent, AgentOptions, ConnectionInvitationQuery, FilterSchema, InvitationQuery, CredentialDefinitionsCreatedParams, IssueCredentialPayload, BasicMessagesPayload, PresentProofPayload, ConnectionsPayload } from '../interface/index';
-import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults, V10PresentationExchange, V10PresentationRequestRequest, PingRequest } from '../interface/api';
+import { InvitationResult, ConnectionRecord, ConnectionInvitation, CredentialDefinitionSendRequest, CredentialDefinitionGetResults, CredentialDefinitionSendResults, SchemaSendRequest, SchemaSendResults, SchemasCreatedResults, V10CredentialOfferRequest, V10CredentialExchange, ConnectionList, CredentialDefinitionsCreatedResults, SchemaGetResults, V10PresentationExchange, V10PresentationRequestRequest, PingRequest, V10PresentationExchangeList } from '../interface/api';
 import * as cors from 'cors';
 import * as socketIO from 'socket.io';
 import { createServer } from 'http';
@@ -435,7 +435,13 @@ export class BaseAgentService implements IBaseAgent {
             });
         return response;
     }
-
+    public async getProofRequests(){
+        const response: V10PresentationExchangeList = await this.adminRequest(`/present-proof/records/`,
+            {
+                method: 'GET'
+            });
+        return response;
+    }
     //#endregion
     //#region health check
     async fetchTiming() {

@@ -245,6 +245,15 @@ export class ABCCorpController implements IBaseController {
             }
         })
     }
-
+    private async getProofRequests() {
+        this.router.post('/present-proof', async (req, res) => {
+            try {
+                const resp = await this.agentService.getProofRequests();
+                res.json(resp);
+            } catch (error) {
+                res.json(error);
+            }
+        })
+    } 
     //#endregion
 }
