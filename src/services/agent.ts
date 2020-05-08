@@ -367,10 +367,10 @@ export class BaseAgentService implements IBaseAgent {
             const socketIo: socketIO.Server = req.app.get('io');
             //shared web hook handler
             if (topic === "connections") {
-                if (stateNotified.includes(payload.state) && !connNotifiedArray.includes(this.connectionId)) {
+                if (stateNotified.includes(payload.state) && !connNotifiedArray.includes(payload.connection_id)) {
                     console.log("SSI Client accepting invitation, notify for UI client with id " + payload.connection_id);
-                    socketIo.sockets.emit(payload.connection_id, payload);
                     connNotifiedArray.push(payload.connection_id);
+                    socketIo.sockets.emit(payload.connection_id, payload);
                 }
                 if (payload.state === "inactive") {
                     //TODO remove in connNotifiedArray if connection is inactive
