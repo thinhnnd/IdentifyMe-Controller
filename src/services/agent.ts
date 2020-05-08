@@ -200,10 +200,10 @@ export class BaseAgentService implements IBaseAgent {
         return result;
     }
     async receiveConnectionInvitation(
-        query: InvitationQuery,
-        body: ConnectionInvitation
-    ): Promise<AxiosResponse<ConnectionRecord>> {
-        return await this.adminRequest('/connections/receive-invitation', {
+        body: ConnectionInvitation,
+        query?: InvitationQuery
+    ): Promise<ConnectionRecord> {
+        const response: ConnectionRecord = await this.adminRequest('/connections/receive-invitation', {
             method: 'POST',
             data: body,
             params: {
@@ -211,6 +211,7 @@ export class BaseAgentService implements IBaseAgent {
                 accept: query.accept
             }
         });
+        return response;
     }
     async acceptInvitation(connectionId: string): Promise<AxiosResponse<ConnectionRecord>> {
         return await this.adminRequest(`/connections/${connectionId}/accept-invitation`, { method: 'POST' });
@@ -379,6 +380,7 @@ export class BaseAgentService implements IBaseAgent {
                 const presentationExchange = payload as V10PresentationExchange
                 if (presentationExchange.verified) {
                     const id = presentationExchange.presentation_exchange_id;
+                    console.log('Presentation Exchange verified');
                     socketIo.sockets.emit(`proof_verified_${id}`, presentationExchange);
                 }
             }
@@ -435,7 +437,7 @@ export class BaseAgentService implements IBaseAgent {
             });
         return response;
     }
-    public async getProofRequests(){
+    public async getProofRequests() {
         const response: V10PresentationExchangeList = await this.adminRequest(`/present-proof/records`,
             {
                 method: 'GET'
