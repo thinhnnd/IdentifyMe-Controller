@@ -6,7 +6,7 @@ cd $(dirname $0)
 
 AGENT="$1"
 shift
-
+export LEDGER_URL="http://test.bcovrin.vonx.io"
 if [ "$AGENT" = "uit" ]; then
 	AGENT_MODULE="UIT-University"
 	AGENT_PORT=8020
