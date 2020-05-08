@@ -115,9 +115,7 @@ export class UITController implements IBaseController {
         this.router.post('/schemas', async (req, res) => {
             try {
                 const body: SchemaSendRequest = {
-                    attributes: req.body.attributes.includes("timestamp")
-                        ? req.body.attributes
-                        : [...req.body.attributes, "timestamp"],
+                    attributes: req.body.attributes,
                     schema_name: req.body.schema_name,
                     schema_version: req.body.schema_version,
                 }
