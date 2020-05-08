@@ -11,7 +11,8 @@ import {
     SchemasCreatedResults,
     SchemaGetResults,
     IndyProofReqAttrSpec,
-    IndyProofReqPredSpec
+    IndyProofReqPredSpec,
+    ConnectionInvitation
 }
     from 'src/interface/api';
 export class UITController implements IBaseController {
@@ -27,6 +28,8 @@ export class UITController implements IBaseController {
             res.send(`<h1> This agent is ${this.agentService.agentName}</h1>`);
         });
         this.createConnInvitationRoute();
+        this.acceptInvitation();
+
         this.createSchemasRoute();
         this.issueCredentialRoute();
         this.getConnections();
@@ -57,6 +60,19 @@ export class UITController implements IBaseController {
                 console.log(`result: ${result}`);
                 res.json(result);
             } catch (error) {
+                res.json(error);
+            }
+        })
+    }
+    private async acceptInvitation() {
+        this.router.post('/invitation/accept', async (req: Request, res: Response) => {
+            try {
+                const invitation: ConnectionInvitation = req.body.invitation;
+                if (!invitation) throw { error: 'Invalid invitation', message: 'Invalid invitation' }
+                const conn = await this.agentService.receiveConnectionInvitation(invitation);
+                if (conn) return conn;
+            } catch (error) {
+                console.log(error);
                 res.json(error);
             }
         })
@@ -250,6 +266,6 @@ export class UITController implements IBaseController {
                 res.json(error);
             }
         })
-    } 
+    }
     //#endregion
 }
