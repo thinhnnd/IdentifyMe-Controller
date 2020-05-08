@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema, SendProofRequestPayload } from '../interface';
+import { IBaseController, ConnectionInvitationQuery, CredentialDefinitionsCreatedParams, FilterSchema, SendProofRequestPayload, InvitationQuery } from '../interface';
 import { UITAgentService } from '../services/uit.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
 import {
@@ -68,9 +68,12 @@ export class UITController implements IBaseController {
         this.router.post('/invitation/accept', async (req: Request, res: Response) => {
             try {
                 const invitation: ConnectionInvitation = req.body.invitation;
+                const query: InvitationQuery = req.query;
+                console.log("UITController -> acceptInvitation -> req.body", req.body)
+                console.log("UITController -> acceptInvitation -> invitation", invitation)
                 if (!invitation) throw { error: 'Invalid invitation', message: 'Invalid invitation' }
-                const conn = await this.agentService.receiveConnectionInvitation(invitation);
-                if (conn) return conn;
+                const conn = await this.agentService.receiveConnectionInvitation(invitation, query);
+                if (conn) res.json(conn);
             } catch (error) {
                 console.log(error);
                 res.json(error);
