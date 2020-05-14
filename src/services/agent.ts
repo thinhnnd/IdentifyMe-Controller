@@ -376,7 +376,7 @@ export class BaseAgentService implements IBaseAgent {
                     //TODO remove in connNotifiedArray if connection is inactive
                 }
             }
-            else if (topic === "proof_request" && payload.state === "verified") {
+            else if (topic === "present_proof" && payload.state === "verified") {
                 const presentationExchange = payload as V10PresentationExchange
                 if (presentationExchange.verified) {
                     const id = presentationExchange.presentation_exchange_id;
