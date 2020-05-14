@@ -58,6 +58,7 @@ export class UITController implements IBaseController {
                 }
                 const result = await this.agentService.createConnectionInvitation(query);
                 console.log(`result: ${result}`);
+                result.invitation.imageUrl = "https://i.ibb.co/8d1MK7g/logo-uit.png";
                 res.json(result);
             } catch (error) {
                 res.json(error);
