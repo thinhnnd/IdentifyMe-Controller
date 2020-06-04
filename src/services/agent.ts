@@ -334,7 +334,7 @@ export class BaseAgentService implements IBaseAgent {
     async webhookListeners(webhookPort: number) {
         this.webhookPort = webhookPort;
         if (RUNMODE === 'pwd') this.webhookURL = `http://localhost:${webhookPort}/webhooks`;
-        else `http://${this.externalHost}:${webhookPort}/webhooks`;
+        else this.webhookURL = `http://${this.externalHost}:${webhookPort}/webhooks`;
         const app = express();
         const webhookServer = createServer(app);
         const io = socketIO.listen(webhookServer, { origins: '*:*' })
