@@ -69,7 +69,7 @@ export class UITController implements IBaseController {
         this.router.post('/invitation/accept', async (req: Request, res: Response) => {
             try {
                 const invitation: ConnectionInvitation = req.body.invitation;
-                const query: InvitationQuery = req.query;
+                const query = req.query;
                 console.log("UITController -> acceptInvitation -> req.body", req.body)
                 console.log("UITController -> acceptInvitation -> invitation", invitation)
                 if (!invitation) throw { error: 'Invalid invitation', message: 'Invalid invitation' }

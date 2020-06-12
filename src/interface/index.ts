@@ -48,16 +48,16 @@ export interface ConnectionInvitationQuery {
 }
 
 export interface InvitationQuery {
-    alias: string,
-    accept: "manual" | "auto"
+    alias: string | any,
+    accept: "manual" | "auto" | any
 }
 export interface CredentialDefinitionsCreatedParams {
-    schema_id?: string
-    schema_issuer_did?: string
-    schema_name?: string
-    schema_version?: string
-    issuer_did?: string
-    cred_def_id?: string
+    schema_id?: string | any
+    schema_issuer_did?: string | any
+    schema_name?: string | any
+    schema_version?: string | any
+    issuer_did?: string | any
+    cred_def_id?: string | any
 }
 export interface SendProofRequestPayload {
     requested_attributes: IndyProofReqAttrSpec[],

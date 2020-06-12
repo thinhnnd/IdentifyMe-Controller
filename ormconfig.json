@@ -1,0 +1,14 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "postgres",
+  "password": "abc123",
+  "database": "identifyme",
+  "entities": [
+    "src/entity/*.{js,ts}"
+  ],
+  "migrations": [
+    "src/migration/*.{js,ts}"
+  ]
+}

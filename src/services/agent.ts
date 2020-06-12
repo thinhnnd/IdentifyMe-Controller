@@ -201,7 +201,7 @@ export class BaseAgentService implements IBaseAgent {
     }
     async receiveConnectionInvitation(
         body: ConnectionInvitation,
-        query?: InvitationQuery
+        query?: any
     ): Promise<ConnectionRecord> {
         const response: ConnectionRecord = await this.adminRequest('/connections/receive-invitation', {
             method: 'POST',
