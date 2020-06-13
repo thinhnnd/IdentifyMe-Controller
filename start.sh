@@ -62,12 +62,6 @@ echo $DOCKERHOST
 IMAGE="identifyme/${AGENT}-agent:1.0.0"
 echo "Preparing agent image for $IMAGE..."
 docker build -t $IMAGE -f Dockerfile . || exit 1
-
-echo "Pulling postgres database..."
-
-docker run --name postgres-docker -e POSTGRES_USER=postgres \ 
-POSTGRES_DB=identifyme POSTGRES_PASSWORD=abc123 -p 5432:5432 -d postgres
-# docker exec -it postgres-docker sh -c psql -v ON_ERROR_STOP=1 -d postgres -c "CREATE DATABASE identifyme OWNER 'postgres';" -u postgres
 DOCKER_ENV="-e RUNMODE=${RUNMODE} -e DOCKERHOST=${DOCKERHOST} -e AGENT_MODULE=${AGENT_MODULE} -e AGENT_PORT=${AGENT_PORT} -e ADMIN_PORT=${ADMIN_PORT} -e WEB_UI_PORT=${WEB_UI_PORT}"
 if ! [ -z "$POSTGRES" ]; then
 	DOCKER_ENV="${DOCKER_ENV} -e POSTGRES=1 -e RUST_BACKTRACE=1"
