@@ -78,7 +78,4 @@ export class AuthService {
       throw error;
     }
   }
-  public async testMiddlewares(){
-    return "OK";
-  }
 }

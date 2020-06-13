@@ -20,7 +20,7 @@ App.connectDatabase().then(() => {
     port: AGENT_PORT + 3,
     controllers: [
       authController,
-      agentController
+      // agentController
     ],
     middlewares: [
       bodyParser.json(),
@@ -29,18 +29,6 @@ App.connectDatabase().then(() => {
       cors({ origin: "*" }),
     ],
   });
-  // const agent = new App({
-  //   port: AGENT_PORT + 3,
-  //   controllers: [
-  //     authController
-  //   ],
-  //   middlewares: [
-  //     bodyParser.json(),
-  //     bodyParser.urlencoded({ extended: true }),
-  //     morgan("dev"),
-  //     cors({ origin: "*" }),
-  //   ],
-  // });
   // Register webhook server
   agent.listen(DEFAULT_INTERNAL_HOST);
 })
