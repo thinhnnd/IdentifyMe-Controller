@@ -32,8 +32,9 @@ export AGENT_PORT
 export WEB_UI_PORT
 
 if [ -z "${PWD_HOST_FQDN}" ]; then
-	DOCKERHOST=`docker run --rm --net=host eclipse/che-ip`
-    export RUNMODE="docker"
+	# DOCKERHOST=`docker run --rm --net=host eclipse/che-ip`
+  DOCKERHOST="45.119.83.216"
+  export RUNMODE="docker"
 else
 	PWD_HOST="${PWD_HOST_FQDN}"
     if [ "$PWD_HOST_FQDN" = "labs.play-with-docker.com" ]
@@ -56,7 +57,8 @@ nextip(){
     NEXT_IP=$(printf '%d.%d.%d.%d\n' `echo $NEXT_IP_HEX | sed -r 's/(..)/0x\1 /g'`)
     echo "$NEXT_IP"
 }
-# SEED=`docker run --rm sofianinho/pwgen-alpine -s 32 1`
+SECRET=`docker run --rm sofianinho/pwgen-alpine -s 32 1`
+export SECRET
 # DOCKERHOST=$(nextip $DOCKERHOST)
 echo $DOCKERHOST
 IMAGE="identifyme/${AGENT}-agent:1.0.0"
@@ -84,6 +86,6 @@ DOCKER=${DOCKER:-docker}
 TMP="$(cut -d'/' -f2 <<<"$IMAGE")"
 NAME="$(cut -d':' -f1 <<<"$TMP")"
 echo "Starting $NAME..."
-$DOCKER run $DOCKER_ENV --name $NAME --rm -it -d \
+$DOCKER run -d $DOCKER_ENV --name $NAME --rm -it \
   -p 0.0.0.0:$AGENT_PORT_RANGE:$AGENT_PORT_RANGE \
   $IMAGE

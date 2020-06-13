@@ -12,7 +12,7 @@ import {
   IndyProofReqAttrSpec,
   V10CredentialProblemReportRequest
 }
-  from 'src/interface/api';
+  from '../interface/api';
 import { generate } from 'randomstring';
 import { v4 } from 'uuid';
 import { BasicMessagesPayload, PresentProofPayload, IssueCredentialPayload, ConnectionsPayload, SendProofRequestPayload } from 'src/interface';

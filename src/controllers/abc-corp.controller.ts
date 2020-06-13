@@ -19,7 +19,7 @@ import {
   IndyProofReqAttrSpec,
   IndyProofReqPredSpec
 }
-  from 'src/interface/api';
+  from '../interface/api';
 export class ABCCorpController implements IBaseController {
   public path = '/';
   public router = Router();
