@@ -11,7 +11,8 @@ export default function checkLoginJWT(req: Request, res: Response, next: NextFun
     let jwtPayload: JWTPayload;
 
     jwtPayload = <JWTPayload>verify(token, process.env.SECRET);
-    res.locals.user = jwtPayload;
+    // res.locals.user = jwtPayload;
+    req.app.set('user', jwtPayload);
   } catch (error) {
     res.status(401).send({ error: "Invalid JWT token" });
     return;

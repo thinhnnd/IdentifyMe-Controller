@@ -6,11 +6,17 @@ import { SEED, AGENT_MODULE, WEB_HOOK_URL } from '../constant';
 import { IssueCredentialPayload, PresentProofPayload, ConnectionsPayload, BasicMessagesPayload, SendProofRequestPayload } from '../interface';
 import { generate } from 'randomstring';
 import { V10CredentialExchange, IndyProofReqAttrSpec, IndyProofReqPredSpec, IndyProofRequest, V10PresentationRequestRequest, V10PresentationExchange, ConnectionRecord, V10CredentialProblemReportRequest } from 'src/interface/api';
-import { v4 } from 'uuid';
+import { getRepository, Repository } from 'typeorm';
+import { User } from '../entity/user.entity';
+import { JWTPayload } from '../dtos/jwt-payload.dto';
+import { Student } from '../entity/student.entity';
+import { Admin } from '../entity/admin.entity';
 export class UITAgentService extends BaseAgentService {
   public credAttrs: string[];
   public credState: {};
   private CRED_PREVIEW_TYPE = "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/issue-credential/1.0/credential-preview";
+  private studentRepository: Repository<Student>;
+  private adminRepository: Repository<Admin>;
   constructor(httpPort: number | string, adminPort: number | string, noAuto: Boolean) {
     super({
       agentName: AGENT_MODULE,
@@ -22,6 +28,9 @@ export class UITAgentService extends BaseAgentService {
     this.connectionId = '';
     this.credAttrs = [];
     this.credState = {};
+    this.studentRepository = getRepository(Student);
+    this.adminRepository = getRepository(Admin);
+
   }
   async bootstrap() {
     console.log('Bootstraping agent ', this.agentName);
@@ -77,6 +86,36 @@ export class UITAgentService extends BaseAgentService {
     const response = await this.sendProofRequest(proofRequest);
     return response;
   }
+  //#region Database access
+  public async updateUser(userPayload: JWTPayload, connection_id: string) {
+    const updated = await this.studentRepository.createQueryBuilder('student')
+      .select('*')
+      .innerJoin('user', 'user', 'student.user_id = user.id')
+      .update(Student)
+      .set({ connection_id })
+      .returning('*')
+      .where('user_id = :id', { id: userPayload.id })
+      .execute()
+    return updated.raw;
+  }
+  public async getAllStudent() {
+    return this.studentRepository.createQueryBuilder('student')
+      .select('*')
+      .innerJoin('user', 'user', 'student.user_id = user.id')
+      .getRawMany();
+  }
+  public async getAdmin() {
+    return this.adminRepository.createQueryBuilder('admin')
+      .addSelect('user_id', 'user_id')
+      .addSelect('user.username', 'username')
+      .addSelect('user.role', 'role')
+      .addSelect('user.email', 'email')
+      .addSelect('user.fullname', 'fullname')
+      .innerJoin('user', 'user', 'admin.user_id = user.id')
+      .getRawMany();
+  }
+  //#endregion
+
   /**
    * @param message payload of agent
    * @description webhook handler for connections

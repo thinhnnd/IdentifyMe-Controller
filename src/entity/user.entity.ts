@@ -13,7 +13,7 @@ export class User {
   @Column()
   email: String
 
-  @Column()
+  @Column({ select: false })
   password: String
 
   @Column()
@@ -22,7 +22,7 @@ export class User {
   @Column()
   birthday: Date
 
-  @Column()
+  @Column({ select: false })
   salt: String
 
   @Column()

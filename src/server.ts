@@ -20,7 +20,7 @@ App.connectDatabase().then(() => {
     port: AGENT_PORT + 3,
     controllers: [
       authController,
-      // agentController
+      agentController
     ],
     middlewares: [
       bodyParser.json(),

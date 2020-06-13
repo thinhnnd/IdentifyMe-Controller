@@ -72,7 +72,11 @@ export class AuthService {
         username: user.username,
         role: user.role
       }
-      return this.createToken(payload);
+      const token = await this.createToken(payload);
+      return {
+        access_token: token,
+        ...payload
+      }
     } catch (error) {
       console.log(error);
       throw error;

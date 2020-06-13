@@ -14,7 +14,10 @@ import {
   IndyProofReqPredSpec,
   ConnectionInvitation
 }
-  from 'src/interface/api';
+  from '../interface/api';
+import checkLoginJWT from '../middlewares/check-login.middleware';
+import { JWTPayload } from '../dtos/jwt-payload.dto';
+import { Student } from '../entity/student.entity';
 export class UITController implements IBaseController {
   public path = '/';
   public router = Router();
@@ -27,6 +30,9 @@ export class UITController implements IBaseController {
     this.router.get('/', (req: Request, res: Response) => {
       res.send(`<h1> This agent is ${this.agentService.agentName}</h1>`);
     });
+    this.updateUserRoute();
+    this.getAllUser();
+
     this.createConnInvitationRoute();
     this.acceptInvitation();
 
@@ -43,6 +49,28 @@ export class UITController implements IBaseController {
 
     this.sendProofRequest();
     this.getProofRequests();
+  }
+  private async getAllUser() {
+    this.router.get('/user', async (req, res) => {
+      const students = await this.agentService.getAllStudent();
+      const admins = await this.agentService.getAdmin();
+      res.json({ students, admins });
+    })
+  }
+  private async updateUserRoute() {
+    this.router.patch('/user', checkLoginJWT, async (req, res) => {
+      const localUser: JWTPayload = req.app.get('user');
+      const connection_id: string = req.body.connection_id;
+      try {
+        if (!connection_id) throw { error: "No connection id provided", code: 400 };
+        console.log("UITController -> updateUserRoute -> localUser", localUser)
+        const found: Student = await this.agentService.updateUser(localUser, connection_id);
+        res.json(found);
+      } catch (error) {
+        console.log("UITController -> updateUserRoute -> error", error)
+        res.status(error.code || 200).json(error);
+      }
+    })
   }
   /**
    * @description Create a new connection invitation and set it into current connection via connectionId.

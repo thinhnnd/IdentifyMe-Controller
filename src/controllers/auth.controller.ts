@@ -5,8 +5,6 @@ import { AuthService } from "../services/auth.service";
 import { error } from "console";
 import checkLoginJWT from "../middlewares/check-login.middleware";
 
-
-
 export class AuthController implements IBaseController {
   public path = '/';
   public router = Router();
@@ -25,8 +23,8 @@ export class AuthController implements IBaseController {
     this.router.post('/login', async (req, res) => {
       const user: AuthCredentialsDto = req.body;
       try {
-        const access_token = await this.authService.login(user);
-        res.json({ access_token });
+        const data = await this.authService.login(user);
+        res.json(data);
       } catch (error) {
         res.status(401).json(error)
       }
