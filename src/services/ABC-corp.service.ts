@@ -15,7 +15,7 @@ import {
   from '../interface/api';
 import { generate } from 'randomstring';
 import { v4 } from 'uuid';
-import { BasicMessagesPayload, PresentProofPayload, IssueCredentialPayload, ConnectionsPayload, SendProofRequestPayload, ApplicantRequestPayload } from 'src/interface';
+import { BasicMessagesPayload, PresentProofPayload, IssueCredentialPayload, ConnectionsPayload, SendProofRequestPayload, ApplicantRequestPayload, ConnectionInvitationQuery} from 'src/interface';
 import { Applicant } from '../entity/applicant.entity';
 import { getRepository, Repository } from 'typeorm';
 
@@ -234,7 +234,6 @@ export class ABCCorpAgentService extends BaseAgentService {
   //#region database access 
   public async createApplicant(applicantPayload: ApplicantRequestPayload) {
     const applicant = new Applicant()
-    await this.createConnectionInvitation();
     applicant.date_of_birth = applicantPayload.date_of_birth;
     applicant.name = applicantPayload.name;
     applicant.school = applicantPayload.school;
@@ -244,9 +243,31 @@ export class ABCCorpAgentService extends BaseAgentService {
     applicant.is_ssi_support = applicantPayload.is_ssi_support;
     applicant.date_submit = new Date()
     applicant.connection_id = '';
+    let invitationQuery:ConnectionInvitationQuery = {
+      alias: "NeeBooBox Corp"
+    }
+    const invitation = await this.createConnectionInvitation(invitationQuery)
+    applicant.connection_id = invitation.connection_id;
     await this.applicantRepository.save(applicant);
     const allUsers = await this.applicantRepository.find();
     return allUsers;
+  }
+
+  public async getApplicantsList() {
+    const applicants = await this.applicantRepository.find();
+    return applicants;
+  }
+
+  public async getApplicantById(id:string) {
+    const applicant = await this.applicantRepository.findOne(id);
+    return applicant;
+  }
+
+  public async removeApplicantById(id:string) {
+    const applicant = await this.applicantRepository.findOne(id);
+    await this.applicantRepository.remove(applicant);
+    console.log(`Remove successfully applicant id: ${id}`);
+    return {message: 'Remove successfully'};
   }
 
   //#endregion

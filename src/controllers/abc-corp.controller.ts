@@ -51,7 +51,9 @@ export class ABCCorpController implements IBaseController {
 
     //Applicant
     this.postApplicantInfo();
-
+    this.getApplicantsList();
+    this.removeApplicantById();
+    this.getApplicantById();
   }
   /**
    * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -276,6 +278,41 @@ export class ABCCorpController implements IBaseController {
 
       } catch(error) {
         res.json(error)
+      }
+    })
+  }
+
+  private async getApplicantsList() {
+    this.router.get('/applicant', async(req, res) => {
+      try {
+        const applicants = await this.agentService.getApplicantsList();
+        res.json(applicants);
+      } catch (error) {
+        res.json(error)
+      }
+    })
+  }
+
+  private async getApplicantById() {
+    this.router.get('/applicant/:id', async(req, res) => {
+      try {
+        const id = req.params.id;
+        const applicant = await this.agentService.getApplicantById(id)
+        res.status(200).json(applicant);
+      } catch (error) {
+        res.json(error)
+      }
+    })
+  }
+
+  private async removeApplicantById() {
+    this.router.delete('/applicant/:id', async(req, res) => {
+      try {
+        const id = req.params.id;
+        const result = await this.agentService.removeApplicantById(id)
+        res.status(200).json(result); 
+      } catch (err) {
+        res.status(500).json(err)
       }
     })
   }
