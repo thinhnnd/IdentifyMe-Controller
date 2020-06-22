@@ -17,11 +17,19 @@ elif [ "$AGENT" = "abc-corp" ]; then
 	AGENT_PORT=8030
   AGENT_PORT_RANGE=8030-8037
   WEB_UI_PORT=3030
+ 
 elif [ "$AGENT" = "vcb-bank" ]; then
 	AGENT_MODULE="VCB-Bank"
 	AGENT_PORT=8040
   AGENT_PORT_RANGE=8040-8047
   WEB_UI_PORT=3040
+
+elif [ "$AGENT" = "neeboobox" ]; then
+	AGENT_MODULE="Neeboobox_Corp"
+	AGENT_PORT=8050
+  AGENT_PORT_RANGE=8050-8057
+  WEB_UI_PORT=3050
+
 else
 	echo "Please specify which agent you want to run. Choose from 'uit', 'abc-corp' or 'vcb-bank'."
 	exit 1
@@ -86,6 +94,6 @@ DOCKER=${DOCKER:-docker}
 TMP="$(cut -d'/' -f2 <<<"$IMAGE")"
 NAME="$(cut -d':' -f1 <<<"$TMP")"
 echo "Starting $NAME..."
-$DOCKER run -d $DOCKER_ENV --name $NAME --rm -it \
+$DOCKER run $DOCKER_ENV --name $NAME --rm -it \
   -p 0.0.0.0:$AGENT_PORT_RANGE:$AGENT_PORT_RANGE \
   $IMAGE

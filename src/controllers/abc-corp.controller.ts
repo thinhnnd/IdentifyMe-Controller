@@ -4,7 +4,8 @@ import {
   ConnectionInvitationQuery,
   CredentialDefinitionsCreatedParams,
   FilterSchema,
-  SendProofRequestPayload
+  SendProofRequestPayload,
+  ApplicantRequestPayload
 } from '../interface';
 import { ABCCorpAgentService } from '../services/ABC-corp.service';
 import { AGENT_PORT, ADMIN_PORT } from '../constant';
@@ -47,6 +48,10 @@ export class ABCCorpController implements IBaseController {
     //Proof
     this.sendProofRequest();
     this.getProofRequests();
+
+    //Applicant
+    this.postApplicantInfo();
+
   }
   /**
    * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -253,6 +258,24 @@ export class ABCCorpController implements IBaseController {
         res.json(resp);
       } catch (error) {
         res.json(error);
+      }
+    })
+  }
+  //#endregion
+
+  //#region applicant
+  private async postApplicantInfo() {
+    this.router.post('/join-us', async (req, res) => {
+      try {     
+        const aplicantInfo:ApplicantRequestPayload = req.body;
+        const applicants = await this.agentService.createApplicant(aplicantInfo)
+        res.json(applicants);
+        if(aplicantInfo.is_ssi_support == true) {
+
+        }
+
+      } catch(error) {
+        res.json(error)
       }
     })
   }

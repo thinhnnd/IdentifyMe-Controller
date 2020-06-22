@@ -15,10 +15,15 @@ import {
   from '../interface/api';
 import { generate } from 'randomstring';
 import { v4 } from 'uuid';
-import { BasicMessagesPayload, PresentProofPayload, IssueCredentialPayload, ConnectionsPayload, SendProofRequestPayload } from 'src/interface';
+import { BasicMessagesPayload, PresentProofPayload, IssueCredentialPayload, ConnectionsPayload, SendProofRequestPayload, ApplicantRequestPayload } from 'src/interface';
+import { Applicant } from '../entity/applicant.entity';
+import { getRepository, Repository } from 'typeorm';
+
+
 export class ABCCorpAgentService extends BaseAgentService {
   public credAttrs: string[];
   public credState: {};
+  private applicantRepository: Repository<Applicant>;
   constructor(httpPort: number | string, adminPort: number | string, noAuto: Boolean) {
     super({
       agentName: AGENT_MODULE,
@@ -30,6 +35,7 @@ export class ABCCorpAgentService extends BaseAgentService {
     this.connectionId = '';
     this.credAttrs = [];
     this.credState = {};
+    this.applicantRepository = getRepository(Applicant);
   }
   async bootstrap() {
     console.log('Bootstraping agent ', this.agentName);
@@ -224,4 +230,24 @@ export class ABCCorpAgentService extends BaseAgentService {
   handle_problem_report = async (payload: V10CredentialProblemReportRequest) => {
     console.log("UITAgentService -> handle_problem_report -> payload", payload)
   }
+
+  //#region database access 
+  public async createApplicant(applicantPayload: ApplicantRequestPayload) {
+    const applicant = new Applicant()
+    await this.createConnectionInvitation();
+    applicant.date_of_birth = applicantPayload.date_of_birth;
+    applicant.name = applicantPayload.name;
+    applicant.school = applicantPayload.school;
+    applicant.address = applicantPayload.address;
+    applicant.position = applicantPayload.position;
+    applicant.is_validate_degree = false;
+    applicant.is_ssi_support = applicantPayload.is_ssi_support;
+    applicant.date_submit = new Date()
+    applicant.connection_id = '';
+    await this.applicantRepository.save(applicant);
+    const allUsers = await this.applicantRepository.find();
+    return allUsers;
+  }
+
+  //#endregion
 }

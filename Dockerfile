@@ -16,5 +16,6 @@ COPY package*.json ./
 RUN /home/indy/.nvm/versions/node/v${NODE_VERSION}/bin/npm install
 COPY . .
 RUN /home/indy/.nvm/versions/node/v${NODE_VERSION}/bin/npm run build
+RUN /home/indy/.nvm/versions/node/v${NODE_VERSION}/bin/npm run db:migrate
 ENTRYPOINT [ "/usr/bin/env" ]
 CMD [ "node","dist/server.js" ]

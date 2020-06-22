@@ -65,3 +65,14 @@ export interface SendProofRequestPayload {
     proof_request_name: string
     comment: string
 }
+
+export interface ApplicantRequestPayload {
+    name: string | any
+    date_of_birth: Date | any
+    email: string | any
+    address: string | any
+    is_ssi_support: boolean | any
+    position: string | any 
+    phone_number: string | any
+    school: string | any
+}
