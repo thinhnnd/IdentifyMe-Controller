@@ -249,7 +249,7 @@ export class ABCCorpAgentService extends BaseAgentService {
     const invitation = await this.createConnectionInvitation(invitationQuery)
     applicant.connection_id = invitation.connection_id;
     await this.applicantRepository.save(applicant);
-    const allUsers = await this.applicantRepository.find();
+    const allUsers = await this.applicantRepository.findOne(applicant);
     return allUsers;
   }
 

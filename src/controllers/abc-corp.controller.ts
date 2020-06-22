@@ -54,6 +54,7 @@ export class ABCCorpController implements IBaseController {
     this.getApplicantsList();
     this.removeApplicantById();
     this.getApplicantById();
+    this.getConnectionById();
   }
   /**
    * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -103,6 +104,19 @@ export class ABCCorpController implements IBaseController {
     this.router.get('/connections', async (req, res) => {
       const connections = await this.agentService.getConnections();
       res.json(connections);
+    })
+  }
+  private async getConnectionById() {
+    this.router.get('/connections/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const connection = await this.agentService.fetchConnectionRecord(id);
+        res.json(connection);
+      }
+      catch (error) {
+        res.json(error);
+      }
+
     })
   }
   private async createSchemasRoute() {

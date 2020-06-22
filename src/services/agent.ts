@@ -226,6 +226,10 @@ export class BaseAgentService implements IBaseAgent {
     const result: ConnectionList = await this.adminRequest(`/connections`, { method: 'get' });
     return result;
   }
+  async getConnectionById(connection_id:string) {
+    const result: ConnectionRecord = await this.adminRequest(`/connections/${connection_id}`, { method: 'get' });
+    return result;
+  }
   async sendTrustPing(connectionId: string, body: PingRequest) {
     try {
       const response = await this.adminRequest(`/connections/${connectionId}/send-ping`, {
