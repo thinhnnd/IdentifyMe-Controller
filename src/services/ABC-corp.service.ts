@@ -241,13 +241,17 @@ export class ABCCorpAgentService extends BaseAgentService {
     applicant.position = applicantPayload.position;
     applicant.is_validate_degree = false;
     applicant.is_ssi_support = applicantPayload.is_ssi_support;
-    applicant.date_submit = new Date()
+    applicant.date_submit = new Date();
     applicant.connection_id = '';
+    applicant.email = applicantPayload.email;
+    applicant.phone_number = applicantPayload.phone_number;
+
     let invitationQuery:ConnectionInvitationQuery = {
       alias: "NeeBooBox Corp"
     }
     const invitation = await this.createConnectionInvitation(invitationQuery)
     applicant.connection_id = invitation.connection_id;
+    applicant.invitation_url = invitation.invitation_url;
     await this.applicantRepository.save(applicant);
     const allUsers = await this.applicantRepository.findOne(applicant);
     return allUsers;
@@ -263,8 +267,26 @@ export class ABCCorpAgentService extends BaseAgentService {
     return applicant;
   }
 
+  public async updateApplicantById(id:string, newData: any) {
+    console.log('update data', newData);
+    const applicant = await this.applicantRepository.findOne(id);
+    await this.applicantRepository.update({
+      id: applicant.id
+      }, 
+      newData
+    )
+    const updatedApplicant = await this.applicantRepository.findOne(id);
+    return updatedApplicant;
+  }
+  
+  private async removePresentProofRecord(credential_exchange_id: string) {
+    const response: any = await this.adminRequest(`/present-proof/records/${credential_exchange_id}/remove`, { method: 'POST' })
+    return response
+  }
+
   public async removeApplicantById(id:string) {
     const applicant = await this.applicantRepository.findOne(id);
+    const result = await this.removePresentProofRecord(id);
     await this.applicantRepository.remove(applicant);
     console.log(`Remove successfully applicant id: ${id}`);
     return {message: 'Remove successfully'};

@@ -48,13 +48,14 @@ export class ABCCorpController implements IBaseController {
     //Proof
     this.sendProofRequest();
     this.getProofRequests();
-
+    this.getProofRequestById();
     //Applicant
     this.postApplicantInfo();
     this.getApplicantsList();
     this.removeApplicantById();
     this.getApplicantById();
     this.getConnectionById();
+    this.updateApplicantById();
   }
   /**
    * @description Create a new connection invitation and set it into current connection via connectionId.
@@ -277,6 +278,18 @@ export class ABCCorpController implements IBaseController {
       }
     })
   }
+
+  private async getProofRequestById() {
+    this.router.get('/present-proof/records/:id', async (req, res) => {
+      try {
+        const cred_ex_id: string = req.params.id;
+        const resp = await this.agentService.getProofRequestById(cred_ex_id)
+        res.json(resp);
+      } catch (error) {
+        res.json(error);
+      }
+    })
+  }
   //#endregion
 
   //#region applicant
@@ -312,6 +325,19 @@ export class ABCCorpController implements IBaseController {
       try {
         const id = req.params.id;
         const applicant = await this.agentService.getApplicantById(id)
+        res.status(200).json(applicant);
+      } catch (error) {
+        res.json(error)
+      }
+    })
+  }
+
+  private async updateApplicantById() {
+    this.router.put('/applicant/:id', async(req, res) => {
+      try {
+        const id = req.params.id;
+        const dataUpdate:ApplicantRequestPayload = req.body; 
+        const applicant = await this.agentService.updateApplicantById(id, dataUpdate);
         res.status(200).json(applicant);
       } catch (error) {
         res.json(error)

@@ -69,10 +69,15 @@ export interface SendProofRequestPayload {
 export interface ApplicantRequestPayload {
     name: string | any
     date_of_birth: Date | any
+    date_submit: Date | any
     email: string | any
     address: string | any
+    school: string | any
     is_ssi_support: boolean | any
+    is_validate_degree: boolean | any
     position: string | any 
     phone_number: string | any
-    school: string | any
+    connection_id: string | any
+    invitation_url: string | any
+    proof_id: string | any
 }

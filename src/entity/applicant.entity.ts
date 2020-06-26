@@ -6,16 +6,22 @@ export class Applicant {
     id: number;
 
     @Column()
-    connection_id: String
+    name: String
 
     @Column()
-    name: String
+    date_of_birth: Date
+
+    @Column()
+    email: String
+
+    @Column()
+    phone_number: String
 
     @Column()
     date_submit: Date
 
-    @Column()
-    date_of_birth: Date
+    @Column() 
+    school: String
 
     @Column()
     address: String
@@ -29,6 +35,14 @@ export class Applicant {
     @Column()
     is_ssi_support: Boolean
 
-    @Column() 
-    school: String
+    @Column()
+    connection_id: String
+
+    @Column()
+    invitation_url: String
+
+    @Column()
+    proof_id: String
+
+
 }

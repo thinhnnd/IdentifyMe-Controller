@@ -448,6 +448,11 @@ export class BaseAgentService implements IBaseAgent {
       });
     return response;
   }
+
+  public async getProofRequestById(credential_exchange_id: string) {
+    const response: any = await this.adminRequest(`/present-proof/records/${credential_exchange_id}`, { method: 'GET' })
+    return response
+  }
   //#endregion
   //#region health check
   async fetchTiming() {
