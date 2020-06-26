@@ -30,9 +30,6 @@ export class Applicant {
     position: String
 
     @Column()
-    is_validate_degree: Boolean
-
-    @Column()
     is_ssi_support: Boolean
 
     @Column()

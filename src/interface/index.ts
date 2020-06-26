@@ -74,7 +74,6 @@ export interface ApplicantRequestPayload {
     address: string | any
     school: string | any
     is_ssi_support: boolean | any
-    is_validate_degree: boolean | any
     position: string | any 
     phone_number: string | any
     connection_id: string | any

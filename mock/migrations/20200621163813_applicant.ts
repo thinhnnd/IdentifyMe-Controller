@@ -3,7 +3,6 @@ import * as Knex from "knex";
 
 export async function up(knex: Knex): Promise<any> {
     try {
-        await knex.schema.dropTableIfExists('applicant');
         const isExisting = await knex.schema.hasTable('applicant');
         if (!isExisting)
             await knex.schema.createTable("applicant", table => {
@@ -23,8 +22,7 @@ export async function up(knex: Knex): Promise<any> {
                 table.string("invitation_url", 1000);
                 table.string("proof_id");
                 table.boolean("is_ssi_support");
-                table.boolean("is_validate_degree");
-
+                
             })
     } catch (error) {
         console.log(error);

@@ -239,7 +239,6 @@ export class ABCCorpAgentService extends BaseAgentService {
     applicant.school = applicantPayload.school;
     applicant.address = applicantPayload.address;
     applicant.position = applicantPayload.position;
-    applicant.is_validate_degree = false;
     applicant.is_ssi_support = applicantPayload.is_ssi_support;
     applicant.date_submit = new Date();
     applicant.connection_id = '';
@@ -286,7 +285,7 @@ export class ABCCorpAgentService extends BaseAgentService {
 
   public async removeApplicantById(id:string) {
     const applicant = await this.applicantRepository.findOne(id);
-    const result = await this.removePresentProofRecord(id);
+    //const result = await this.removePresentProofRecord(applicant.);
     await this.applicantRepository.remove(applicant);
     console.log(`Remove successfully applicant id: ${id}`);
     return {message: 'Remove successfully'};
